@@ -143,12 +143,14 @@ type ID = 0 | 1 | 2 | 3 ;
 
 class Player {
     hand : Tile[];
+    open_blocks : Tile[][];
     public river : Tile[];
     public points : number;
     public id: ID;
     public constructor(id : ID){
         this.id = id;
         this.hand = [];
+        this.open_blocks = [];
         this.river = [];
         this.points = 25000;
     }
@@ -235,8 +237,60 @@ class Player {
         for(let tile of this.hand){
             output += tile.toString() + "|";
         }
+        output += "   blocks:[";
+        for(let block of this.open_blocks){
+            output += block.toString() + "][";
+        }
+        output += "]";
 
         return output;
+    }
+    public call(tile : Tile, call : Exclude<Call, "skip">){
+        let nr = tile.nr;
+        let type = tile.type;
+        switch (call){
+            case "chi":
+                console.log("Chi is not implemented yet");
+                break;
+            case "pon":
+                for(let i = 0; i < 2; i++){
+                    let index = this.getIndex(tile);
+                    if(index === -1){
+                        //TODO; proper handle
+                        console.log("improper Pon");
+                        break;
+                    }
+                    this.hand.splice(index, 1);
+                }
+                this.open_blocks.push([new Tile(nr, type), new Tile(nr, type), new Tile(nr ,type)]);
+                break;
+            case "kan":
+                for(let i = 0; i < 3; i++){
+                    let index = this.getIndex(tile);
+                    if(index === -1){
+                        //TODO; proper handle
+                        console.log("improper Kan");
+                        break;
+                    }
+                    this.hand.splice(index, 1);
+                }
+                this.open_blocks.push([new Tile(nr, type), new Tile(nr, type), new Tile(nr, type), new Tile(nr ,type)]);
+                break;
+            case "ron":
+                console.log("Ron is not implemented yet");
+                break;
+            case "tsumo":
+                console.log("Tsumo is not implemented yet");
+                break;
+        }
+    }
+
+    public getIndex(tile : Tile) : number{
+        var tile_from_hand = this.hand.find(x => x.compare(tile) === 0);
+        if(tile_from_hand === undefined){
+            return -1;
+        }
+        return this.hand.indexOf(tile_from_hand);
     }
 }
 
@@ -245,7 +299,7 @@ class Round {
     wall : Tile[];
     public constructor(public turn_id : number){ //TODO: make it take not-new players
         this.players = [new Player(0), new Player(1), new Player(2), new Player(3)];
-        this.wall = generate_all_tiles().sort((x, y) => Math.random() - 0.5);
+        this.wall = generate_all_tiles().sort((x, y) => Math.random() - 0.5); //TODO: change to be factually random, this one is biased
         if(this.wall.length === 0){
             throw Error("Invalid wall");
         }
@@ -274,7 +328,7 @@ class Round {
             
             var winners : Player [] = [];
             for(let player2 of this.players){
-                if(players_actions[player2.id]?.localeCompare("ron")===0){
+                if(players_actions[player2.id]?.localeCompare("ron") === 0){
                     winners.push(player2);
                 }
             }
@@ -288,6 +342,9 @@ class Round {
                 console.log("PON");
                 this.turn_id = pon_player.id;
                 //handle pon
+                player.river.pop();
+                pon_player.call(tile_discarded, "pon");
+                await this.turn(false);
             }
             var kan = players_actions.findIndex(x => x.localeCompare("kan") === 0);
             const kan_player = this.players[kan]; 
@@ -295,6 +352,9 @@ class Round {
                 console.log("KAN");
                 this.turn_id = kan_player.id;
                 //handle kan
+                player.river.pop();
+                kan_player.call(tile_discarded, "kan");
+                await this.turn(false);
             }
             var chi = players_actions.findIndex(x => x.localeCompare("chi") === 0);
             const chi_player = this.players[chi]; 
@@ -308,11 +368,13 @@ class Round {
             await this.handle_discard(player, tile_discarded2);
         }
     }
-    public async turn(){
+    public async turn(draw : boolean){
         const player = this.players[this.turn_id];
         if(player != undefined){ 
             sort(player.hand);
-            player.draw(this.wall);
+            if(draw){
+                player.draw(this.wall);
+            }
             var tile_id = await player.takeAction();
             var tile_discarded = player.discard(tile_id);
             console.log(tile_discarded);
@@ -322,7 +384,7 @@ class Round {
 
     public async main_loop(){
         while(this.wall.length > 14){
-            await this.turn();
+            await this.turn(true);
             this.turn_id = (this.turn_id + 1) % 4;
         }
     }
