@@ -6,7 +6,7 @@ class Round {
     players : [Player, Player, Player, Player];
     wall : Tile[];
     public constructor(public turn_id : number){ //TODO: make it take not-new players
-        this.players = [new Player(0), new Player(1), new Player(2), new Player(3)];
+        this.players = [new Player(0,"0"), new Player(1,"1"), new Player(2,"2"), new Player(3,"3")];
         this.wall = generate_all_tiles().sort((x, y) => Math.random() - 0.5); //TODO: change to be factually random, this one is biased
         if(this.wall.length === 0){
             throw Error("Invalid wall");
@@ -89,6 +89,17 @@ class Round {
             console.log(tile_discarded);
             var handle = await this.handle_discard(player, tile_discarded);
         }
+    }
+    public visibleToString() : string{
+        var output = "";
+        for(let player of this.players){
+            
+            output += "Player" + player.id + "\n";
+            output += "discard: \n" + player.discard + "\n";
+            output += "open blocks: \n" + player.open_blocks;
+            output += "\n";
+        }
+        return output;
     }
 
     public async main_loop(){

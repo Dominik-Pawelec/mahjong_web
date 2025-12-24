@@ -1,4 +1,5 @@
 const express = require("express");
+import { Socket } from "dgram";
 import type { Request, Response } from "express";
 
 const http = require("http");
@@ -23,5 +24,14 @@ server.listen(port, () => {
 //socket.io logic
 io.on("connection", (socket : any) => { //TODO: make proper typing, not any
     console.log("User connected :" + socket.id);
+
+    socket.on("choice", (data : any) => {
+        console.log(data);
+        socket.broadcast.emit("choice", data);
+    });
+
+    socket.on("disconnect", () => {
+        console.log("User disconnected :" + socket.id);
+    });
 });
 

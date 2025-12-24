@@ -1,6 +1,7 @@
 import {Call, Tile} from "./game_types";
 import {isWinningHand, allCalls} from "./game_types";
 
+
 const readline = require("readline");
 const rl = readline.createInterface({
     input : process.stdin,
@@ -14,12 +15,14 @@ export class Player {
     public river : Tile[];
     public points : number;
     public id: number;
-    public constructor(id : number){
+    public socket_id : string;
+    public constructor(id : number, socket_id : string){
         this.id = id;
         this.hand = [];
         this.open_blocks = [];
         this.river = [];
         this.points = 25000;
+        this.socket_id = socket_id;
     }
     public draw(wall : Tile[]){
         let tile = wall.pop();
