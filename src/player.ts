@@ -1,29 +1,24 @@
 import {Call, Tile} from "./game_types";
 import {isWinningHand, allCalls} from "./game_types";
 
-
-const readline = require("readline");
-const rl = readline.createInterface({
-    input : process.stdin,
-    output : process.stdout
-});
-
-
 export class Player {
     hand : Tile[];
     open_blocks : Tile[][];
     public river : Tile[];
     public points : number;
     public id: number;
-    public socket_id : string;
-    public constructor(id : number, socket_id : string){
+    public socket : any;
+    public constructor(id : number, socket : any){
         this.id = id;
         this.hand = [];
         this.open_blocks = [];
         this.river = [];
         this.points = 25000;
-        this.socket_id = socket_id;
+        this.socket = socket;
     }
+    private action_resolver : any;
+    private special_action_resolver : any;
+
     public draw(wall : Tile[]){
         let tile = wall.pop();
         if(tile != undefined){
@@ -41,22 +36,28 @@ export class Player {
     }
     public takeAction() : Promise<number> {
         return new Promise((resolve) => {
-            rl.question(this.toString() + "\n 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13\n", (tile_id : number) => {
-                //TODO: validate size of a hand
-                resolve (Number (tile_id));
-            });
+            this.action_resolver = resolve;
+
+            this.socket?.emit("your choice", ":3")
         });
-    }
+    };
     public takeSpecialAction(calls : Call []) : Promise<Call> {
-        return new Promise((resolve) => {
-            rl.question(calls.toString(), (nr : number) => {
-                const val = calls[nr];
-                if(val === undefined){return resolve("skip");}
-                if(!allCalls.includes(val)){return resolve("skip");}
-                return resolve(val);
-            });
+        return new Promise(resolve => {
+            this.special_action_resolver = resolve;
+            this.socket?.emit("special action", ":33");
         });
+    };
+    public resolveAction(tile_id: number) {
+        this.action_resolver?.(tile_id);
+        this.action_resolver = undefined;
     }
+
+    public resolveSpecialAction(call: Call) {
+        if (!allCalls.includes(call)) call = "skip";
+        this.special_action_resolver?.(call);
+        this.special_action_resolver = undefined;
+    }
+
     public possibleCallsOn(tile : Tile, curr_id : number) : Call [] {
         var output : Call [] = ["skip"];
         //CHI

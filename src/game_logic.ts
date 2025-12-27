@@ -1,12 +1,13 @@
+import { NONAME } from "dns";
 import {Call, Tile} from "./game_types";
 import {generate_all_tiles, sort} from "./game_types";
 import {Player} from "./player";
 
-class Round {
+export class Round {
     players : [Player, Player, Player, Player];
     wall : Tile[];
-    public constructor(public turn_id : number){ //TODO: make it take not-new players
-        this.players = [new Player(0,"0"), new Player(1,"1"), new Player(2,"2"), new Player(3,"3")];
+    public constructor(public turn_id : number, players : [Player, Player, Player, Player]){ //TODO: make it take not-new players
+        this.players = players;
         this.wall = generate_all_tiles().sort((x, y) => Math.random() - 0.5); //TODO: change to be factually random, this one is biased
         if(this.wall.length === 0){
             throw Error("Invalid wall");
@@ -86,7 +87,7 @@ class Round {
             }
             var tile_id = await player.takeAction();
             var tile_discarded = player.discard(tile_id);
-            console.log(tile_discarded);
+            //console.log(tile_discarded);
             var handle = await this.handle_discard(player, tile_discarded);
         }
     }
@@ -94,8 +95,8 @@ class Round {
         var output = "";
         for(let player of this.players){
             
-            output += "Player" + player.id + "\n";
-            output += "discard: \n" + player.discard + "\n";
+            output += "Player" + player.id + ": " + player.socket.id + "\n";
+            output += "discard: \n" + player.river + "\n";
             output += "open blocks: \n" + player.open_blocks;
             output += "\n";
         }
@@ -108,9 +109,19 @@ class Round {
             this.turn_id = (this.turn_id + 1) % 4;
         }
     }
-}
 
+    public placeInLobby(){
+        return this.players.find(x => x.socket === undefined);
+    }
+}
+/*
 (async () => {
-    var game = new Round(0);
+    var game = new Round(0, [new Player(0,"0"), new Player(1,"1"), new Player(2,"2"), new Player(3,"3")]);
     await game.main_loop();
-})()
+})()*/
+
+export async function startGame(round : Round){
+    for(var i = 0; i < 3; i++){
+        await round.main_loop();
+    }
+}
