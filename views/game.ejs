@@ -9,13 +9,14 @@
     <div class = "gameState">Waiting for game...</div>
     <h2>Your Hand</h2>
     <div class = "playerHand">Waiting for game...</div>
+    <h2>Special Action</h2>
+    <div class="specialChoiceContainer">Waiting for special action...</div>
     <input type="text" class="choice">
     <button onclick="sendChoice()">choose</button>
-    <input type="text" class="specialChoice">
-    <button onclick="sendSpecialChoice()">choose special</button>
 
     <script>
         const socket = io("http://localhost:6060");
+        const container = document.querySelector(".specialChoiceContainer");
 
         function sendChoice() {
             const choice = document.querySelector(".choice").value; 
@@ -29,6 +30,19 @@
         socket.on("gameState", ({state, player_hand}) => {
             document.querySelector(".gameState").textContent = state;
             document.querySelector(".playerHand").textContent = player_hand;
+        });
+
+        socket.on("special action", ({ calls }) => {
+            const container = document.querySelector(".specialChoiceContainer");
+            container.innerHTML = "Calls: ";
+            calls.forEach(call => {
+                const btn = document.createElement("button");
+                btn.textContent = call;
+                btn.onclick = () => {
+                    socket.emit("specialChoice", { call: call });
+                };
+                container.appendChild(btn);
+            });
         });
     </script>
 </body>

@@ -37,14 +37,13 @@ export class Player {
     public takeAction() : Promise<number> {
         return new Promise((resolve) => {
             this.action_resolver = resolve;
-
             this.socket?.emit("your choice", ":3")
         });
     };
     public takeSpecialAction(calls : Call []) : Promise<Call> {
         return new Promise(resolve => {
             this.special_action_resolver = resolve;
-            this.socket?.emit("special action", ":33");
+            this.socket?.emit("special action", { calls });
         });
     };
     public resolveAction(tile_id: number) {
