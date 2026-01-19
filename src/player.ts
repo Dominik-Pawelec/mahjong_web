@@ -24,6 +24,7 @@ export class Player {
         if(tile != undefined){
             this.hand.push(tile);
         }
+        return tile;
     }
     public discard(tile_id : number) : Tile{
         var tile_discarded = this.hand[tile_id];
@@ -34,10 +35,10 @@ export class Player {
         this.river.push(tile_discarded);
         return tile_discarded;
     }
-    public takeAction() : Promise<number> {
+    public takeAction(tile : Tile | undefined) : Promise<number> {
         return new Promise((resolve) => {
             this.action_resolver = resolve;
-            this.socket?.emit("your choice", ":3")
+            this.socket?.emit("your choice", tile?.toString())
         });
     };
     public takeSpecialAction(calls : Call []) : Promise<Call> {

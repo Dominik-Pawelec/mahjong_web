@@ -73,7 +73,7 @@ export class Round {
                 this.turn_id = chi_player.id;
                 //handle chi
             }
-            var tile_id = await player.takeAction();
+            var tile_id = await player.takeAction(undefined);
             var tile_discarded2 = player.discard(tile_id);
             await this.handle_discard(player, tile_discarded2);
         }
@@ -81,11 +81,12 @@ export class Round {
     public async turn(draw : boolean){
         const player = this.players[this.turn_id];
         if(player != undefined){ 
+            var tile : Tile | undefined = undefined;
             sort(player.hand);
             if(draw){
-                player.draw(this.wall);
+                tile = player.draw(this.wall);
             }
-            var tile_id = await player.takeAction();
+            var tile_id = await player.takeAction(tile? tile : undefined);
             var tile_discarded = player.discard(tile_id);
             //console.log(tile_discarded);
             var handle = await this.handle_discard(player, tile_discarded);

@@ -55,6 +55,12 @@ io.on("connection", (socket : any) => { //TODO: make proper typing, not any
             });
         }
         player?.resolveAction(data);
+        if(round){
+            lobby.forEach(player => {
+                const player_hand = player.toString();
+                player.socket.emit("gameState", {state, player_hand});
+            });
+        }
     });
     socket.on("specialChoice", async (data : any) => {
         const player = lobby.find(p => p.socket.id === socket.id);
@@ -66,6 +72,12 @@ io.on("connection", (socket : any) => { //TODO: make proper typing, not any
             });
         }
         player?.resolveSpecialAction(data.call);
+        if(round){
+            lobby.forEach(player => {
+                const player_hand = player.toString();
+                player.socket.emit("gameState", {state, player_hand});
+            });
+        }
     });
 
     socket.on("disconnect", () => {
