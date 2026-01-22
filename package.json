@@ -1,0 +1,36 @@
+{
+  "name": "mahjong_web",
+  "version": "1.0.0",
+  "description": "Orzeł",
+  "main": "index.js",
+  "scripts": {
+	"build": "tsc",
+	"install-all": "npm install && cd src/frontend && npm install",
+    "backend": "ts-node src/backend/server.ts",
+    "frontend": "echo \"Not implemented yet\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dominik-Pawelec/mahjong_web.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Dominik-Pawelec/mahjong_web/issues"
+  },
+  "homepage": "https://github.com/Dominik-Pawelec/mahjong_web#readme",
+  "dependencies": {
+    "ejs": "^4.0.1",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3",
+    "svelte": "^5.48.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.0.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import { Player } from "./player";
 import { Round, startGame} from "./game_logic";
 import http from "http";
+import path from "path"
 
 const app = express();
 const server = http.createServer(app);
@@ -12,6 +13,7 @@ const io = new Server(server, {cors : {origin:""}});
 
 const port = 6060;
 app.set("view engine", "ejs");
+app.set('views', path.join(__dirname, '../../views'));
 
 
 app.get("/game", (req : Request, res : Response) => {
