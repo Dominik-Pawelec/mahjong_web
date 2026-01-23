@@ -7,7 +7,7 @@
 	"build": "tsc",
 	"install-all": "npm install && cd src/frontend && npm install",
     "backend": "ts-node src/backend/server.ts",
-    "frontend": "echo \"Not implemented yet\""
+    "frontend": "cd src/frontend && npm run dev"
   },
   "repository": {
     "type": "git",

@@ -1,2 +1,24 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import {goto} from '$app/navigation';
+
+	function enterLobby() {
+		goto('/lobby');
+	}
+</script>
+
+<main>
+	<h1>Mahjong Web</h1>
+	<button on:click={enterLobby}>Join Game</button>
+</main>
+
+<style>
+	main {
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		flex-direction: column;
+		min-height: 100vh;
+		padding-top: 20vh;
+		font-family: sans-serif;
+	}
+</style>
