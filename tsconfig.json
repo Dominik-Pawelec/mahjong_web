@@ -9,8 +9,8 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "rootDir": "./src/backend",
-    "outDir": "./dist/backend",
+    "rootDir": "./src",
+    "outDir": "./dist",
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -40,6 +40,9 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "downlevelIteration": true,
+	"paths": {
+		"@common/*": ["./src/common/*"]
+	}
   },
-  "include": ["src/backend/**/*"]
+  "include": ["src/backend/**/*", "src/common/**/*"]
 }
