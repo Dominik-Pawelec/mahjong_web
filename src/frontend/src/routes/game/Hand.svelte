@@ -16,7 +16,7 @@
 			<div class="hand-col">
 				<div class="hand-row">
 					{#each hand as t}
-						<TileHTML rotated={0} scale={1} tile={t}/>
+						<TileHTML rotated={false} scale={1} tile={t}/>
 					{/each}
 				</div>
 				<DiscardsHTML discards={discards} riichiIdx={riichiIdx} />

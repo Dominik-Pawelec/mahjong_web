@@ -1,9 +1,11 @@
 export type Wind = "east" | "south" | "west" | "north";
 
 export type Tile = | {
+	kind: "closed";
+} | {
 	kind: "suit";
 	suit: "pin" | "sou" | "man";
-	value: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+	value: 1 | 2 | 3 | 4 | 5 | 'red5' | 6 | 7 | 8 | 9;
 } | {
 	kind: "wind";
 	value: Wind;
@@ -15,7 +17,7 @@ export type Tile = | {
 export type Chi = {
 	kind: "chi";
 	tiles: [Tile, Tile, Tile];
-	stolenTileIdx: 0 | 1 | 2;
+	stolenTile: Tile;
 	player: Wind;
 };
 
@@ -28,12 +30,12 @@ export type Pon = {
 export type Kan = | {
 	kind: "kan";
 	tile: Tile;
-	open: true;
+	type: "open" | "added";
 	player: Wind;
 } | {
 	kind: "kan";
 	tile: Tile;
-	open: false;
+	type: "closed";
 	player?: never;
 };
 

@@ -11,7 +11,7 @@
 	
 	type TileAndMeta = {
 		tile: Tile[];
-		rotation: 0 | 1;
+		rotation: Boolean;
 	}
 
 	const stolenDir: Direction = getPosition(block.player!, playerWind)
@@ -23,37 +23,37 @@
 	let tilesToDraw: TileAndMeta[] = new Array();
 	if(block.kind === "chi") {
 		const nonStolenTiles: Tile[] = sortTiles(block.tiles.filter(x => !sameTile(x, block.stolenTile)))
-		tilesToDraw.push({tile: new Array(block.stolenTile), rotation: 1})
+		tilesToDraw.push({tile: new Array(block.stolenTile), rotation: true})
 		for(let t of nonStolenTiles) {
-			tilesToDraw.push({tile: new Array(t), rotation: 0})
+			tilesToDraw.push({tile: new Array(t), rotation: false})
 		}
 	}
 	else if (block.kind === "pon") {
 		for(let i = 0; i < 3; ++i) {
-			tilesToDraw.push({tile: new Array(block.tile), rotation: (i === stolenIdx ? 1 : 0)})
+			tilesToDraw.push({tile: new Array(block.tile), rotation: i === stolenIdx})
 		}
 	}
 	else if (block.kind === "kan") {
 		if(block.type === "open") {
 			for(let i = 0; i < 2; ++i) {
-				tilesToDraw.push({tile: new Array(block.tile), rotation: (i === stolenIdx ? 1 : 0)})
+				tilesToDraw.push({tile: new Array(block.tile), rotation: i === stolenIdx})
 			}
-			tilesToDraw.push({tile: new Array(block.tile), rotation: 0})
-			tilesToDraw.push({tile: new Array(block.tile), rotation: (2 === stolenIdx ? 1 : 0)})
+			tilesToDraw.push({tile: new Array(block.tile), rotation: false})
+			tilesToDraw.push({tile: new Array(block.tile), rotation: 2 === stolenIdx})
 		}
 		else if (block.type === "closed") {
-			tilesToDraw.push({tile: new Array({kind: "closed"}), rotation: 0})
-			tilesToDraw.push({tile: new Array(block.tile), rotation: 0})
-			tilesToDraw.push({tile: new Array(block.tile), rotation: 0})
-			tilesToDraw.push({tile: new Array({kind: "closed"}), rotation: 0})
+			tilesToDraw.push({tile: new Array({kind: "closed"}), rotation: false})
+			tilesToDraw.push({tile: new Array(block.tile), rotation: false})
+			tilesToDraw.push({tile: new Array(block.tile), rotation: false})
+			tilesToDraw.push({tile: new Array({kind: "closed"}), rotation: false})
 		}
 		else if (block.type === "added") {
 			for(let i = 0; i < 3; ++i) {
 				if(i === stolenIdx) {
-					tilesToDraw.push({tile: new Array(block.tile, block.tile), rotation: 1})
+					tilesToDraw.push({tile: new Array(block.tile, block.tile), rotation: true})
 				}
 				else {
-					tilesToDraw.push({tile: new Array(block.tile), rotation: 0})
+					tilesToDraw.push({tile: new Array(block.tile), rotation: false})
 				}
 			}
 		}

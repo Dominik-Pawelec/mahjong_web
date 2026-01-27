@@ -6,7 +6,7 @@
 
 	type TileAndMeta = {
 		tile: Tile;
-		rotation: 0 | 1;
+		rotation: Boolean;
 	}
 
 	let tileRows: TileAndMeta[][] = new Array(3)
@@ -15,15 +15,15 @@
 	tileRows[2] = new Array()
 
 	for(let i = 0; i < 6 && i < discards.length; ++i) {
-		tileRows[0].push({tile: discards[i], rotation: (i === riichiIdx ? 1 : 0)})
+		tileRows[0].push({tile: discards[i], rotation: i === riichiIdx})
 	}
 
 	for(let i = 6; i < 12 && i < discards.length; ++i) {
-		tileRows[1].push({tile: discards[i], rotation: (i === riichiIdx ? 1 : 0)})
+		tileRows[1].push({tile: discards[i], rotation: i === riichiIdx})
 	}
 
 	for(let i = 12; i < discards.length; ++i) {
-		tileRows[2].push({tile: discards[i], rotation: (i === riichiIdx ? 1 : 0)})
+		tileRows[2].push({tile: discards[i], rotation: i === riichiIdx})
 	}
 </script>
 

@@ -3,13 +3,12 @@
 	import type {ColorScheme} from "../common.ts"
     import { getContext } from 'svelte';
 
-	type Rotation = 0 | 1;
-	export let rotated: Rotation = 0;
+	export let rotated: Boolean = false;
 	export let scale = 1;
 	export let tile: Tile;
 
 	const baseWidth = 50;
-	const baseHeight = 75;
+	const baseHeight = Math.ceil(baseWidth * 4/3);
 
 	const colorScheme: ColorScheme = getContext("colorScheme")!;
 
@@ -19,64 +18,78 @@
 	])
 
 	const tileNameMap = new Map<string, string>([
-		['{"kind":"closed"}', "Back.svg"],
-		['{"kind":"suit","suit":"sou","value":1}', "Sou1.svg"],
-		['{"kind":"suit","suit":"sou","value":2}', "Sou2.svg"],
-		['{"kind":"suit","suit":"sou","value":3}', "Sou3.svg"],
-		['{"kind":"suit","suit":"sou","value":4}', "Sou4.svg"],
-		['{"kind":"suit","suit":"sou","value":5}', "Sou5.svg"],
-		['{"kind":"suit","suit":"sou","value":"red5"}', "Sou5-Dora.svg"],
-		['{"kind":"suit","suit":"sou","value":6}', "Sou6.svg"],
-		['{"kind":"suit","suit":"sou","value":7}', "Sou7.svg"],
-		['{"kind":"suit","suit":"sou","value":8}', "Sou8.svg"],
-		['{"kind":"suit","suit":"sou","value":9}', "Sou9.svg"],
+		[JSON.stringify({kind:"closed"}), "Back.svg"],
+		[JSON.stringify({kind:"suit",suit:"sou",value:1}), "Sou1.svg"],
+		[JSON.stringify({kind:"suit",suit:"sou",value:2}), "Sou2.svg"],
+		[JSON.stringify({kind:"suit",suit:"sou",value:3}), "Sou3.svg"],
+		[JSON.stringify({kind:"suit",suit:"sou",value:4}), "Sou4.svg"],
+		[JSON.stringify({kind:"suit",suit:"sou",value:5}), "Sou5.svg"],
+		[JSON.stringify({kind:"suit",suit:"sou",value:"red5"}), "Sou5-Dora.svg"],
+		[JSON.stringify({kind:"suit",suit:"sou",value:6}), "Sou6.svg"],
+		[JSON.stringify({kind:"suit",suit:"sou",value:7}), "Sou7.svg"],
+		[JSON.stringify({kind:"suit",suit:"sou",value:8}), "Sou8.svg"],
+		[JSON.stringify({kind:"suit",suit:"sou",value:9}), "Sou9.svg"],
 
-		['{"kind":"suit","suit":"man","value":1}', "Man1.svg"],
-		['{"kind":"suit","suit":"man","value":2}', "Man2.svg"],
-		['{"kind":"suit","suit":"man","value":3}', "Man3.svg"],
-		['{"kind":"suit","suit":"man","value":4}', "Man4.svg"],
-		['{"kind":"suit","suit":"man","value":5}', "Man5.svg"],
-		['{"kind":"suit","suit":"man","value":"red5"}', "Man5-Dora.svg"],
-		['{"kind":"suit","suit":"man","value":6}', "Man6.svg"],
-		['{"kind":"suit","suit":"man","value":7}', "Man7.svg"],
-		['{"kind":"suit","suit":"man","value":8}', "Man8.svg"],
-		['{"kind":"suit","suit":"man","value":9}', "Man9.svg"],
+		[JSON.stringify({kind:"suit",suit:"man",value:1}), "Man1.svg"],
+		[JSON.stringify({kind:"suit",suit:"man",value:2}), "Man2.svg"],
+		[JSON.stringify({kind:"suit",suit:"man",value:3}), "Man3.svg"],
+		[JSON.stringify({kind:"suit",suit:"man",value:4}), "Man4.svg"],
+		[JSON.stringify({kind:"suit",suit:"man",value:5}), "Man5.svg"],
+		[JSON.stringify({kind:"suit",suit:"man",value:"red5"}), "Man5-Dora.svg"],
+		[JSON.stringify({kind:"suit",suit:"man",value:6}), "Man6.svg"],
+		[JSON.stringify({kind:"suit",suit:"man",value:7}), "Man7.svg"],
+		[JSON.stringify({kind:"suit",suit:"man",value:8}), "Man8.svg"],
+		[JSON.stringify({kind:"suit",suit:"man",value:9}), "Man9.svg"],
 
-		['{"kind":"suit","suit":"pin","value":1}', "Pin1.svg"],
-		['{"kind":"suit","suit":"pin","value":2}', "Pin2.svg"],
-		['{"kind":"suit","suit":"pin","value":3}', "Pin3.svg"],
-		['{"kind":"suit","suit":"pin","value":4}', "Pin4.svg"],
-		['{"kind":"suit","suit":"pin","value":5}', "Pin5.svg"],
-		['{"kind":"suit","suit":"pin","value":"red5"}', "Pin5-Dora.svg"],
-		['{"kind":"suit","suit":"pin","value":6}', "Pin6.svg"],
-		['{"kind":"suit","suit":"pin","value":7}', "Pin7.svg"],
-		['{"kind":"suit","suit":"pin","value":8}', "Pin8.svg"],
-		['{"kind":"suit","suit":"pin","value":9}', "Pin9.svg"],
+		[JSON.stringify({kind:"suit",suit:"pin",value:1}), "Pin1.svg"],
+		[JSON.stringify({kind:"suit",suit:"pin",value:2}), "Pin2.svg"],
+		[JSON.stringify({kind:"suit",suit:"pin",value:3}), "Pin3.svg"],
+		[JSON.stringify({kind:"suit",suit:"pin",value:4}), "Pin4.svg"],
+		[JSON.stringify({kind:"suit",suit:"pin",value:5}), "Pin5.svg"],
+		[JSON.stringify({kind:"suit",suit:"pin",value:"red5"}), "Pin5-Dora.svg"],
+		[JSON.stringify({kind:"suit",suit:"pin",value:6}), "Pin6.svg"],
+		[JSON.stringify({kind:"suit",suit:"pin",value:7}), "Pin7.svg"],
+		[JSON.stringify({kind:"suit",suit:"pin",value:8}), "Pin8.svg"],
+		[JSON.stringify({kind:"suit",suit:"pin",value:9}), "Pin9.svg"],
 
-		['{"kind":"wind","value":"east"}', "Ton.svg"],
-		['{"kind":"wind","value":"south"}', "Nan.svg"],
-		['{"kind":"wind","value":"west"}', "Shaa.svg"],
-		['{"kind":"wind","value":"north"}', "Pei.svg"],
+		[JSON.stringify({kind:"wind",value:"east"}), "Ton.svg"],
+		[JSON.stringify({kind:"wind",value:"south"}), "Nan.svg"],
+		[JSON.stringify({kind:"wind",value:"west"}), "Shaa.svg"],
+		[JSON.stringify({kind:"wind",value:"north"}), "Pei.svg"],
 
-		['{"kind":"dragon","value":"red"}', "Chun.svg"],
-		['{"kind":"dragon","value":"green"}', "Hatsu.svg"],
-		['{"kind":"dragon","value":"white"}', "Front.svg"]
+		[JSON.stringify({kind:"dragon",value:"red"}), "Chun.svg"],
+		[JSON.stringify({kind:"dragon",value:"green"}), "Hatsu.svg"],
+		[JSON.stringify({kind:"dragon",value:"white"}), "Haku.svg"],
+		["Front", "Front.svg"],
+		["Back", "Back.svg"],
 	])
 
-
-	$: width = (rotated === 1 ? baseHeight : baseWidth) * scale
-	$: height = (rotated === 1 ? baseWidth : baseHeight) * scale
-	$: rotation = rotated * 90
+	$: width = (rotated ? baseHeight : baseWidth) * scale
+	$: height = (rotated ? baseWidth : baseHeight) * scale
+	$: rotation = (rotated ? 1 : 0) * 90
 	$: tile_text = (tile.kind === "closed" ? "#" : ((tile.kind === "suit") ? tile.suit : "H") + "(" + tile.value + ")")
 	$: path = colorSchemePathMap.get(colorScheme)! + tileNameMap.get(JSON.stringify(tile))!
-	$: backPath = colorSchemePathMap.get(colorScheme)! + tileNameMap.get('{"kind":"dragon","value":"white"}')!
+	$: backPath = colorSchemePathMap.get(colorScheme)! + tileNameMap.get((tile.kind === "closed" ? "Back" : "Front"));
 </script>
 
-<div style="width: {width}px; height: {height}px;">
-	<div class="tile" style="transform: rotate({rotation}deg); background-image: url({backPath});">
-		<img src={path} alt={tile_text} class="imgh" />
+<main>
+	<div class="layout-box" style="width: {width}px; height: {height}px;">
+		<div class="tile" style="
+			width: {baseWidth}px;
+			height: {baseHeight}px;
+			background-image: url({backPath});
+			top: 50%;
+			left: 50%;
+			transform: translate(0%, 0%) rotate({rotation}deg);
+			">
+			<img src={path} alt={tile_text} style="
+				width: 100%;
+				height: 100%;
+				transform: scale(95%);
+				" />
+		</div>
 	</div>
-</div>
+</main>
 
 <style>
 	.tile {
@@ -85,15 +98,17 @@
 		background-position: center;
 		background-origin: center;
 		background-repeat: no-repeat;
-		overflow: hidden;
-		box-sizing: border-box;
 		width: 100%;
 		height: 100%;
+		overflow: visible;
 	}
-	.imgh {
-		object-fit: cover;
-		width: 100%;
-		height: 100%;
-		
+	.layout-box {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		overflow: visible;
 	}
 </style>
+
+
+<!-- this is Tile element in svelte, when i use it in another container with gap, the gap on the left is samaller and on the right is bigger -->
