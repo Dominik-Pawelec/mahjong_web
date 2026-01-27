@@ -21,19 +21,29 @@ export class Round {
         console.log("handling");
         console.log(tile_discarded);
         if(tile_discarded === undefined){return;}//TODO: implement better logic
-        var players_actions : Call [] = ["skip","skip","skip","skip"];
         
-        for(let player2 of this.players){//TODO: make async(when gui will be workig correctly)
-            console.log(player2.id);
-            if(player.id === player2.id){continue;}
-            var calls = player2.possibleCallsOn(tile_discarded, player.id);
-            console.log(player2.toString());
-            console.log("Possible calls: " + calls);
-            if(calls.length === 1){continue;} //only "skip"
-            var action = await player2.takeSpecialAction(calls);
-            players_actions[player2.id] = action;
+        const actions: Promise<{id : number; action : Call}>[] = [];
+        for(const player2 of this.players){
+            if(player2.id === player.id) {continue;}
+
+            const calls = player2.possibleCallsOn(tile_discarded, player.id);
+            if(calls.length === 1) {continue;}
+
+            actions.push(
+                player.takeSpecialAction(calls).then(action => ({
+                    id : player2.id,
+                    action : action
+                }))
+            );   
+        }
+        const results = await Promise.all(actions);
+
+        var players_actions : Call [] = ["skip","skip","skip","skip"];
+        for (const result of results) {
+            players_actions[result.id] = result.action;
         }
         console.log(players_actions);
+        
         if(players_actions.some(action => action.localeCompare("skip") !== 0)){
             
             var winners : Player [] = [];
@@ -54,6 +64,7 @@ export class Round {
                 //handle pon
                 player.river.pop();
                 pon_player.call(tile_discarded, "pon");
+                emitGameState(this, this.players);
                 await this.turn(false);
             }
             var kan = players_actions.findIndex(x => x.localeCompare("kan") === 0);
@@ -64,6 +75,7 @@ export class Round {
                 //handle kan
                 player.river.pop();
                 kan_player.call(tile_discarded, "kan");
+                emitGameState(this, this.players);
                 await this.turn(false);
             }
             var chi = players_actions.findIndex(x => x.localeCompare("chi") === 0);
@@ -85,10 +97,11 @@ export class Round {
             sort(player.hand);
             if(draw){
                 tile = player.draw(this.wall);
+                emitGameState(this, this.players);
             }
             var tile_id = await player.takeAction(tile? tile : undefined);
             var tile_discarded = player.discard(tile_id);
-            //console.log(tile_discarded);
+            emitGameState(this, this.players);
             var handle = await this.handle_discard(player, tile_discarded);
         }
     }
@@ -114,12 +127,26 @@ export class Round {
     public placeInLobby(){
         return this.players.find(x => x.socket === undefined);
     }
+
+
+
+
 }
 /*
 (async () => {
     var game = new Round(0, [new Player(0,"0"), new Player(1,"1"), new Player(2,"2"), new Player(3,"3")]);
     await game.main_loop();
 })()*/
+
+function emitGameState(round : Round, lobby : Player[]){
+    const state = round.visibleToString();
+    lobby.forEach(player => {
+        player.socket.emit("gameState", {
+            state : state,
+            palyer_hand: player.toString()
+        })
+    });
+}
 
 export async function startGame(round : Round){
     for(var i = 0; i < 3; i++){

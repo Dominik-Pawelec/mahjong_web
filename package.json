@@ -4,8 +4,8 @@
   "description": "Orzeł",
   "main": "index.js",
   "scripts": {
-	"build": "tsc",
-	"install-all": "npm install && cd src/frontend && npm install",
+    "build": "tsc",
+    "install-all": "npm install && cd src/frontend && npm install",
     "backend": "ts-node src/backend/server.ts",
     "frontend": "cd src/frontend && npm run dev"
   },
@@ -22,12 +22,14 @@
   },
   "homepage": "https://github.com/Dominik-Pawelec/mahjong_web#readme",
   "dependencies": {
+    "all": "^0.0.0",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
     "socket.io": "^4.8.3",
     "svelte": "^5.48.0"
   },
   "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^6.2.3",
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.10",
     "ts-node": "^10.9.2",
