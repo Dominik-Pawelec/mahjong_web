@@ -1,83 +1,100 @@
-export type TileColor = "man" | "pin" | "sou" | "honor";
-export const tileColors : TileColor[] = ["man", "pin", "sou", "honor"]
-
 export type Call = "skip" | "chi" | "pon" | "kan" | "ron" | "tsumo";
 export const allCalls : Call[] = ["skip","chi", "pon", "kan", "ron", "tsumo"]
 
-export class Tile{
-    public constructor(public nr : number, public type : TileColor,){
-        if(type === "honor"){
-            if(nr < 1 || nr > 7){
-                throw Error("Wrong tile definition");
-            }
-        }
-        else{
-            if(nr < 1 || nr > 9){
-                throw Error("Wrong tile definition");
-            }
-        }
-    };
-    public toString() : string {
-        if(this.type === "honor"){
-            const symbol = ["東", "南", "西", "北", "白", "中", "發"][this.nr-1];
-            if(symbol === undefined){
-                return "UNKNOWN SYMBOL";
-            }
-            return symbol;
-        }
-        else{
-        return(this.nr.toString() + this.type[0]);
-        }
-    }
-    public compare(other : Tile) : number{
-        return this.toString().localeCompare(other.toString());
-    }
-}
+import type * as Common from "@common/mahjonh_types";
 
+export type Tile = Exclude<Common.Tile, {kind : "closed"}>;
 
 export function generate_all_tiles() : Tile[] {
     var output : Tile[] = [];
     for(var i = 0; i < 4; i++){
-        for(const color of tileColors){
-            if(color === "honor"){
-                for(let nr = 1; nr < 8; nr++){
-                    output.push(new Tile(nr, color));
-                }
+        output.push({
+            kind : "dragon",
+            value : "red"});
+        output.push({
+            kind : "dragon",
+            value : "green"});
+        output.push({
+            kind : "dragon",
+            value : "white"});
+        
+        output.push({
+            kind : "wind",
+            value : "east"});
+        output.push({
+            kind : "wind",
+            value : "south"});
+        output.push({
+            kind : "wind",
+            value : "west"});
+        output.push({
+            kind : "wind",
+            value : "north"});
+        
+        const suits : ("man" | "pin" | "sou" )[] = ["man", "pin", "sou"];
+        const values : (1 | 2 | 3 | 4 | 6 | 7 | 8 | 9) [] = [1, 2, 3, 4, 6, 7, 8, 9]; 
+        for(const suit of suits){
+            for(const value of values){
+                output.push({
+                    kind : "suit",
+                    suit : suit,
+                    value : value
+                });
+            }
+            if(i === 0){
+                output.push({
+                    kind : "suit",
+                    suit : suit,
+                    value : 5,
+                    isRed : true
+                });
             }
             else{
-                for(let nr = 1; nr < 10; nr++){
-                    output.push(new Tile(nr, color));
-                }
+                output.push({
+                    kind : "suit",
+                    suit : suit,
+                    value : 5,
+                    isRed : false
+                });
             }
-        }  
+        }
+        
     }
     return output;
 }
 
+export function sameTile(t1 : Tile, t2 : Tile) : boolean{
+    if(t1.value === 5 && t2.value === 5){
+        return true;
+    }
+    return JSON.stringify(t1) === JSON.stringify(t2);
+}
+/*
 function getPairs(tiles : Tile[]) : Tile[] {
     var counts = new Map<string, number>;
     for(const tile of tiles){
-        const key = tile.toString();
+        const key = JSON.stringify(tile);
         counts.set(key, (counts.get(key) ?? 0) + 1);
     }
     var list_of_keys = ([... counts].filter(([_, value]) => value >= 2)).map(([key, _]) => key);
     var pairs : Tile[] = [];
     for(const tile of tiles){
-        const key = tile.toString();
+        const key = JSON.stringify(tile);
         if(list_of_keys.includes(key)){
             pairs.push(tile);
             const index = list_of_keys.indexOf(key);
             list_of_keys.splice(index, 1);
         }
-    } //string -> Tile
+    }
     return pairs;
-};
+};*/
+/*
 function isWinningHandNoPairs(tiles : Tile[]) : boolean{
     var tiles_copy = [... tiles];
     if (tiles_copy[0] === undefined){return true;}
 
     var fst = tiles_copy[0];
-    var nr_of_fst = tiles_copy.filter(tile => tile.compare(fst) === 0).length;
+    var nr_of_fst = tiles_copy.filter(tile => JSON.stringify(tile) === JSON.stringify(fst)).length;
     if(nr_of_fst >=3){
         for(var i = 0; i < 3; i++){
             var index = tiles_copy.indexOf(fst);
@@ -85,25 +102,29 @@ function isWinningHandNoPairs(tiles : Tile[]) : boolean{
         }
         return isWinningHandNoPairs(tiles_copy)
     }
-    if(fst.type === "honor"){return false;}
-    try{
-        var snd_acc = new Tile(fst.nr + 1, fst.type);
-        var trd_acc = new Tile(fst.nr + 2, fst.type);
-        var snd = tiles_copy.find(tile => snd_acc.compare(tile) === 0);
-        var trd = tiles_copy.find(tile => trd_acc.compare(tile) === 0);
-        if(snd !== undefined && trd !== undefined){
+    if(fst.kind === "wind" || fst.kind === "dragon"){return false;}
+
+    
+    var snd_acc = {
+        kind : fst.kind,
+        suit : fst.suit,
+        value : fst.value + 1
+    };
+    var trd_acc = new Tile(fst.nr + 2, fst.type);
+    var snd = tiles_copy.find(tile => JSON.stringify(tile) ===  JSON.stringify(snd_acc));
+    var trd = tiles_copy.find(tile => JSON.stringify(tile) ===  JSON.stringify(trd_acc));
+    if(snd !== undefined && trd !== undefined){
         for(var tile of [fst, snd, trd]){
             var temp_tile = tiles_copy.find( tile2 => tile2.compare(tile) === 0);
-            if(temp_tile === undefined){return false;} //Absurd
-            var index = tiles_copy.indexOf(temp_tile);
-            tiles_copy.splice(index, 1);
-        }
+        if(temp_tile === undefined){return false;} //Absurd
+        var index = tiles_copy.indexOf(temp_tile);
+        tiles_copy.splice(index, 1);
         }
         return isWinningHandNoPairs(tiles_copy);
-    } catch (Error){}//try...catch dlatego, że tworząc nieprawidłowy Tile wywala Error
-
+    }   
     return false;
 };
+
 export function isWinningHand(tiles : Tile[]) : boolean{
     var tiles_copy = [... tiles];
     sort(tiles_copy);
@@ -122,15 +143,4 @@ export function isWinningHand(tiles : Tile[]) : boolean{
     }
     return false;
 };
-
-export function sort(tiles : Tile[]) : void{
-    tiles.sort((x, y) => {
-        if(x.type === y.type){
-            return x.nr - y.nr;
-        }
-        else{
-            return (x.type.localeCompare(y.type));
-        }
-    });
-};
-
+*/

@@ -1,7 +1,8 @@
 import { NONAME } from "dns";
-import {Call, Tile} from "./game_types";
-import {generate_all_tiles, sort} from "./game_types";
-import {Player} from "./player";
+import { Call, Tile } from "./game_types";
+import { sortTiles } from "@common/mahjonh_types";
+import { generate_all_tiles } from "./game_types";
+import { Player } from "./player";
 
 export class Round {
     players : [Player, Player, Player, Player];
@@ -94,7 +95,7 @@ export class Round {
         const player = this.players[this.turn_id];
         if(player != undefined){ 
             var tile : Tile | undefined = undefined;
-            sort(player.hand);
+            sortTiles(player.hand);
             if(draw){
                 tile = player.draw(this.wall);
                 emitGameState(this, this.players);

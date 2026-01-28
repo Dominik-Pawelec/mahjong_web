@@ -1,5 +1,6 @@
 import {Call, Tile} from "./game_types";
-import {isWinningHand, allCalls} from "./game_types";
+import { allCalls } from "./game_types";
+import { sameTile } from "./game_types";
 
 export class Player {
     hand : Tile[];
@@ -26,7 +27,7 @@ export class Player {
         }
         return tile;
     }
-    public discard(tile_id : number) : Tile{
+    public discard(tile_id : number) : Tile {
         var tile_discarded = this.hand[tile_id];
         this.hand.splice(tile_id, 1);
         if(tile_discarded === undefined){
@@ -60,7 +61,7 @@ export class Player {
 
     public possibleCallsOn(tile : Tile, curr_id : number) : Call [] {
         var output : Call [] = ["skip"];
-        //CHI
+        /*CHI
         if((curr_id + 1) % 4 === this.id){
             try{
                 var m2 = new Tile(tile.nr - 2, tile.type);
@@ -75,9 +76,9 @@ export class Player {
                     output.push("chi");  
                 }
             } catch (Error){}
-        }
+        }*/
         //PON and KAN
-        var nr_of_t = this.hand.filter(x => x.compare(tile) === 0).length;
+        var nr_of_t = this.hand.filter(x => sameTile(x, tile)).length;
         if(nr_of_t >= 3){
             output.push("kan");
             output.push("pon");
@@ -89,9 +90,9 @@ export class Player {
         //WIN
         var hand_copy = [... this.hand];
         hand_copy.push(tile);
-        if(isWinningHand(hand_copy)){
-            output.push("ron");
-        }
+        //if(isWinningHand(hand_copy)){
+        //    output.push("ron");
+        //}
         
         return output;
     }
@@ -116,48 +117,13 @@ export class Player {
 
         return output;
     }
+
     public call(tile : Tile, call : Exclude<Call, "skip">){
-        let nr = tile.nr;
-        let type = tile.type;
-        switch (call){
-            case "chi":
-                console.log("Chi is not implemented yet");
-                break;
-            case "pon":
-                for(let i = 0; i < 2; i++){
-                    let index = this.getIndex(tile);
-                    if(index === -1){
-                        //TODO; proper handle
-                        console.log("improper Pon");
-                        break;
-                    }
-                    this.hand.splice(index, 1);
-                }
-                this.open_blocks.push([new Tile(nr, type), new Tile(nr, type), new Tile(nr ,type)]);
-                break;
-            case "kan":
-                for(let i = 0; i < 3; i++){
-                    let index = this.getIndex(tile);
-                    if(index === -1){
-                        //TODO; proper handle
-                        console.log("improper Kan");
-                        break;
-                    }
-                    this.hand.splice(index, 1);
-                }
-                this.open_blocks.push([new Tile(nr, type), new Tile(nr, type), new Tile(nr, type), new Tile(nr ,type)]);
-                break;
-            case "ron":
-                console.log("Ron is not implemented yet");
-                break;
-            case "tsumo":
-                console.log("Tsumo is not implemented yet");
-                break;
-        }
+        //TODO: implement later
     }
 
     public getIndex(tile : Tile) : number{
-        var tile_from_hand = this.hand.find(x => x.compare(tile) === 0);
+        var tile_from_hand = this.hand.find(x => sameTile(x, tile));
         if(tile_from_hand === undefined){
             return -1;
         }
