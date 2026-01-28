@@ -12,43 +12,44 @@
 
 <main>
 	<div class="hand">
-		<div class="hand-row">
-			<div class="hand-col">
-				<div class="hand-row">
+		<div class="hand-col">
+				<DiscardsHTML discards={discards} riichiIdx={riichiIdx} />
+			<div class="hand-row">
+				<div class="tiles">
 					{#each hand as t}
-						<TileHTML rotated={false} scale={1} tile={t}/>
+						<TileHTML rotated={false} tile={t}/>
 					{/each}
 				</div>
-				<DiscardsHTML discards={discards} riichiIdx={riichiIdx} />
+				<BlocksHTML blocks={blocks}/>
 			</div>
 		</div>
-		<BlocksHTML blocks={blocks}/>
 	</div>
 </main>
 
 <style>
 	.hand {
-		position: fixed;
-		bottom: 20px;
-		left: 50%;
-		transform: translateX(-50%);
 		display: flex;
-		gap: 50px;
+		z-index: 100;
+		align-items: center;
+	}
+	.tiles {
+		display: flex;
+		gap: 0.6vmin;
 		z-index: 100;
 		align-items: flex-end;
 	}
 	.hand-row {
 		display: flex;
-		gap: 5px;
+		gap: 3vmin;
 		z-index: 100;
 		align-items: flex-end;
 	}
 	.hand-col {
 		display: flex;
-		gap: 100px;
+		gap: 5vmin;
 		z-index: 100;
-		align-items: flex-start;
+		align-items: center;
 		flex-direction: row;
-		flex-direction: column-reverse;
+		flex-direction: column;
 	}
 </style>

@@ -3,7 +3,8 @@
 	import type { Block, Wind, Tile } from '@common/mahjonh_types';
 	import {getContext} from 'svelte'
 	import type {Direction} from '../common.ts'
-    import { getPosition, sameTile, sortTiles } from '../common';
+    import { getPosition } from '../common';
+	import { sameTile, sortTiles } from "@common/mahjonh_types"
 
 	const playerWind: Wind = getContext("playerWind");
 
@@ -66,7 +67,7 @@
 		{#each tilesToDraw as tiles}
 			<div class="block-col">
 				{#each tiles.tile as t}
-					<TileHTML scale={1} rotated={tiles.rotation} tile={t} />
+					<TileHTML rotated={tiles.rotation} tile={t} />
 				{/each}
 			</div>
 		{/each}
@@ -77,14 +78,14 @@
 	.block {
 		position: relative;
 		display: flex;
-		gap: 5px;
+		gap: 0.6vmin;
 		z-index: 100;
 		align-items: flex-end;
 	}
 	.block-col {
 		position: relative;
 		display: flex;
-		gap: 5px;
+		gap: 0.6vmin;
 		z-index: 100;
 		align-items: flex-end;
 		flex-direction: column-reverse;

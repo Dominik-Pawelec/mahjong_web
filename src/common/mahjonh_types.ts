@@ -1,6 +1,5 @@
 export type Wind = "east" | "south" | "west" | "north";
 
-
 export type Tile = | {
 	kind: "closed";
 } | {
@@ -59,21 +58,17 @@ export type PlayerData = {
 	avaliableMelds: Block[]
 }
 
-export type PublicTableData = {
-	wind: Wind;
-	doraIndicators: Tile[];
-} & {
-	[P in Wind]: PublicPlayerData
-}
-
 export type Table = {
-	tableData: PublicTableData;
+	roundWind: Wind;
+	doraIndicators: Tile[];
 } & {
 	[P in Wind]: {
 		publicData: PublicPlayerData;
 		privateData: PlayerData;
 	}
 }
+
+export type Meld = "chi" | "pon" | "kan" | "ron" | "tsumo" | "skip"
 
 export function sortTiles(tl: Tile[]): Tile[] {
 	return tl.sort((t1: Tile, t2: Tile): number => {

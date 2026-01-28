@@ -17,8 +17,9 @@
 <style>
 	.blocks {
 		display: flex;
-		gap: 20px;
+		gap: 1.2vmin;
 		z-index: 100;
-		flex-direction: column-reverse;
+		flex-direction: row;
+		align-items: flex-end;
 	}
 </style>
