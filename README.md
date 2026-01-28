@@ -13,3 +13,7 @@ Build TypeScript:
 ```bash
 npm run build
 ```
+When cloning the first time don't forget to run
+```bash
+git submodule init && git submodule update
+```
