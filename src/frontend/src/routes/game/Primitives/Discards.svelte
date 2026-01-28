@@ -32,7 +32,7 @@
 		{#each tileRows as row}
 			<div class="discarded-row">
 				{#each row as tile}
-					<TileHTML rotated={tile.rotation} scale={1} tile={tile.tile} />
+					<TileHTML rotated={tile.rotation} tile={tile.tile} />
 				{/each}
 			</div>
 		{/each}
@@ -44,13 +44,13 @@
 	.discarded {
 		display: flex;
 		flex-direction: column;
-		gap: 5px;
+		gap: 0.6vmin;
 		z-index: 100;
 		align-items: flex-start;
 	}
 	.discarded-row {
 		display: flex;
-		gap: 5px;
+		gap: 0.6vmin;
 		z-index: 100;
 		align-items: flex-end;
 	}

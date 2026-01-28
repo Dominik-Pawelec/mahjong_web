@@ -4,11 +4,10 @@
     import { getContext } from 'svelte';
 
 	export let rotated: Boolean = false;
-	export let scale = 1;
 	export let tile: Tile;
 
-	const baseWidth = 50;
-	const baseHeight = Math.ceil(baseWidth * 4/3);
+	const baseWidth = 4.2
+	const baseHeight = baseWidth * 4 / 3
 
 	const colorScheme: ColorScheme = getContext("colorScheme")!;
 
@@ -64,8 +63,8 @@
 		["Back", "Back.svg"],
 	])
 
-	$: width = (rotated ? baseHeight : baseWidth) * scale
-	$: height = (rotated ? baseWidth : baseHeight) * scale
+	$: width = (rotated ? baseHeight : baseWidth)
+	$: height = (rotated ? baseWidth : baseHeight)
 	$: rotation = (rotated ? 1 : 0) * 90
 	$: tile_text = (tile.kind === "closed" ? "#" : ((tile.kind === "suit") ? tile.suit : "H") + "(" + tile.value + ")")
 	$: path = colorSchemePathMap.get(colorScheme)! + tileNameMap.get(JSON.stringify(tile))!
@@ -73,10 +72,10 @@
 </script>
 
 <main>
-	<div class="layout-box" style="width: {width}px; height: {height}px;">
+	<div class="layout-box" style="width: {width}vmin; height: {height}vmin;">
 		<div class="tile" style="
-			width: {baseWidth}px;
-			height: {baseHeight}px;
+			width: {baseWidth}vmin;
+			height: {baseHeight}vmin;
 			background-image: url({backPath});
 			top: 50%;
 			left: 50%;
@@ -109,6 +108,3 @@
 		overflow: visible;
 	}
 </style>
-
-
-<!-- this is Tile element in svelte, when i use it in another container with gap, the gap on the left is samaller and on the right is bigger -->

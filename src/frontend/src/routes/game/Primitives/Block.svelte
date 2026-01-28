@@ -66,7 +66,7 @@
 		{#each tilesToDraw as tiles}
 			<div class="block-col">
 				{#each tiles.tile as t}
-					<TileHTML scale={1} rotated={tiles.rotation} tile={t} />
+					<TileHTML rotated={tiles.rotation} tile={t} />
 				{/each}
 			</div>
 		{/each}
@@ -77,14 +77,14 @@
 	.block {
 		position: relative;
 		display: flex;
-		gap: 5px;
+		gap: 0.6vmin;
 		z-index: 100;
 		align-items: flex-end;
 	}
 	.block-col {
 		position: relative;
 		display: flex;
-		gap: 5px;
+		gap: 0.6vmin;
 		z-index: 100;
 		align-items: flex-end;
 		flex-direction: column-reverse;
