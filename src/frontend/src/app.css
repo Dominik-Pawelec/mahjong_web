@@ -1,0 +1,27 @@
+@font-face {
+	font-family: 'yomogi';
+	src: url('/static/assets/fonts/yomogi/Yomogi-Regular.ttf');
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'sekaiwo';
+	src: url('/static/assets/fonts/sekaiwo/Sekaiwo-Regular.ttf');
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'night-in-tokyo';
+	src: url('/static/assets/fonts/night-in-tokyo/NightinTokyo.ttf');
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+
+body {
+	background-color: #252525;
+}

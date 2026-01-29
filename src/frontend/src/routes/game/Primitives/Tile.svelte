@@ -3,7 +3,7 @@
 	import type {ColorScheme} from "../common.ts"
     import { getContext } from 'svelte';
 
-	export let rotated: Boolean = false;
+	export let rotated: boolean = false;
 	export let tile: Tile;
 
 	const baseWidth = 4.2

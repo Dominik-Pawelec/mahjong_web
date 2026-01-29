@@ -12,7 +12,7 @@
 	
 	type TileAndMeta = {
 		tile: Tile[];
-		rotation: Boolean;
+		rotation: boolean;
 	}
 
 	const stolenDir: Direction = getPosition(block.player!, playerWind)

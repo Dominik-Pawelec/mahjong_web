@@ -1,0 +1,10 @@
+This font is FREE for personal & commercial use.
+
+If you have any question or just to say Hi, feel free to contact me here:
+kenaudrey17@gmail.com
+
+Thank you :)
+
+Follow me at :
+https://www.instagram.com/tkzgraphic/
+https://www.behance.net/tkzgraphic

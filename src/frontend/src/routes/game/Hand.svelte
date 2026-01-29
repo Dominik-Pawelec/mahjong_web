@@ -2,18 +2,24 @@
     import BlocksHTML from './Primitives/Blocks.svelte';
 	import TileHTML from './Primitives/Tile.svelte'
 	import DiscardsHTML from './Primitives/Discards.svelte'
+	import RiichiHTML from './Primitives/Riichi.svelte'
 	import type {Tile, Block} from '@common/mahjonh_types'
 
 	export let hand: Tile[];
 	export let blocks: Block[];
 	export let discards: Tile[];
-	export let riichiIdx: Number;
+	export let riichiIdx: number;
 </script>
 
 <main>
 	<div class="hand">
 		<div class="hand-col">
+			<div class="col-gap">
+				{#if riichiIdx !== -1}
+					<RiichiHTML />
+				{/if}
 				<DiscardsHTML discards={discards} riichiIdx={riichiIdx} />
+			</div>
 			<div class="hand-row">
 				<div class="tiles">
 					{#each hand as t}
@@ -49,7 +55,12 @@
 		gap: 5vmin;
 		z-index: 100;
 		align-items: center;
-		flex-direction: row;
+		flex-direction: column;
+	}
+	.col-gap {
+		gap: 1.2vmin;
+		display: flex;
+		align-items: center;
 		flex-direction: column;
 	}
 </style>

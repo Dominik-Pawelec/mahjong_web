@@ -49,7 +49,7 @@ export type Block = Chi | Pon | Kan;
 export type PublicPlayerData = {
 	discards: Tile[];
 	blocks: Block[];
-	points: Number;
+	points: number;
 }
 
 export type PlayerData = {
@@ -61,14 +61,17 @@ export type PlayerData = {
 export type Table = {
 	roundWind: Wind;
 	doraIndicators: Tile[];
+	tilesLeft: number;
 } & {
 	[P in Wind]: {
 		publicData: PublicPlayerData;
 		privateData: PlayerData;
+		playerName: string;
+		playerPoints: number;
 	}
 }
 
-export type Meld = "chi" | "pon" | "kan" | "ron" | "tsumo" | "skip"
+export type Meld = "chi" | "pon" | "kan" | "ron" | "tsumo" | "riichi" | "skip";
 
 export function sortTiles(tl: Tile[]): Tile[] {
 	return tl.sort((t1: Tile, t2: Tile): number => {
@@ -93,6 +96,6 @@ export function sortTiles(tl: Tile[]): Tile[] {
 	})
 }
 
-export function sameTile(t1: Tile, t2: Tile): Boolean {
+export function sameTile(t1: Tile, t2: Tile): boolean {
 	return JSON.stringify(t1) === JSON.stringify(t2);
 }

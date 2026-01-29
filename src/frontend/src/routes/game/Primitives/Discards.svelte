@@ -2,11 +2,11 @@
 	import type {Tile} from '@common/mahjonh_types'
 	import TileHTML from "./Tile.svelte"
 	export let discards: Tile[]
-	export let riichiIdx: Number // -1 if no riichi
+	export let riichiIdx: number; // -1 if no riichi
 
 	type TileAndMeta = {
 		tile: Tile;
-		rotation: Boolean;
+		rotation: boolean;
 	}
 
 	let tileRows: TileAndMeta[][] = new Array(3)
@@ -47,6 +47,7 @@
 		gap: 0.6vmin;
 		z-index: 100;
 		align-items: flex-start;
+		height: 18vmin;
 	}
 	.discarded-row {
 		display: flex;

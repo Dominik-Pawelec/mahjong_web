@@ -11,5 +11,14 @@ export function getPosition(wind: Wind, playerWind: Wind): Direction {
 	]) .get(playerWind)!.get(wind)!;
 }
 
+export function getPlayerWinds(w: Wind): Map<Direction, Wind> {
+	return new Map<Wind, Map<Direction, Wind>>([
+		["east", new Map([["bottom", "east"], ["right", "south"], ["top", "west"], ["left", "north"]])],
+		["south", new Map([["bottom", "south"], ["right", "west"], ["top", "north"], ["left", "east"]])],
+		["west", new Map([["bottom", "west"], ["right", "north"], ["top", "east"], ["left", "south"]])],
+		["north", new Map([["bottom", "north"], ["right", "east"], ["top", "south"], ["left", "west"]])]
+	]).get(w)!
+}
+
 
 export type ColorScheme = "dark" | "light";
