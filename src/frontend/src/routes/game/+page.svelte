@@ -1,19 +1,18 @@
 <script lang="ts">
-	import type { PlayerData, Tile, Block, Wind } from "@common/mahjonh_types"
+	import type { PlayerData, Tile, Block, Wind, Meld } from "@common/mahjonh_types"
 	import { sortTiles } from "@common/mahjonh_types"
 	import {onMount, setContext} from "svelte"
 	import HandHTML from './Hand.svelte'
-	import RiichiHTML from './Primitives/Riichi.svelte'
+	import MeldsHTML from './Melds.svelte'
+	import { getPlayerWind } from "./common"
 	import '../../app.css'
-	import type { Direction } from "./common"
-	import { getPlayerWinds } from "./common"
 
 	setContext("playerWind", "east");
 	setContext("colorScheme", "light");
 
 	let playerWind: Wind = "east"
-	const windChar: Map<Wind, string> = new Map([ ["east", "東"], ["south", "南"], ["west", "西"], ["north", "北"] ]);
-	let playerWinds: Map<Direction, Wind> = getPlayerWinds(playerWind);
+	let tableWind: Wind = "south"
+	const windChar: Record<Wind, string> = {east: "東", south: "南", west: "西", north: "北"};
 
 	onMount(() => {
 		return () => {
@@ -21,7 +20,9 @@
 		}
 	})
 
-	let currentWind = windChar.get("east");
+	let melds: Meld[] = new Array("tsumo", "ron", "pon", "skip");
+
+	let currentWind = windChar[tableWind];
 	let tilesLeft = 45;
 
 	let nameBottom = "orzełB"
@@ -68,7 +69,7 @@
 
 	const exampleHand: Tile[] = [
 		{kind: "suit", suit: "sou", value: 8}, 
-		{kind: "suit", suit: "sou", value: 2},
+		{kind: "suit", suit: "sou", value: 5, isRed: true},
 		{kind: "suit", suit: "man", value: 1},
 		{kind: "suit", suit: "sou", value: 1},
 		{kind: "suit", suit: "man", value: 2},
@@ -82,40 +83,43 @@
 		{kind: "suit", suit: "man", value: 2},
 	];
 
-	const exampleRiichiIdx: number = 8;
+	const exampleRiichiIdx: number | undefined = undefined;
 
 	let playerData: PlayerData = {
 		hand: sortTiles(exampleHand),
 		wind: "east",
-		avaliableMelds: new Array(0)
+		availableMelds: new Array(0)
 	}
 	
 </script>
 
 <main>
 	<div class="table">
+		<div class="melds">
+			<MeldsHTML melds={melds} />
+		</div>
 		<div class="meta">
 			<div class="info">
 				<div class="infoc wind"> {currentWind} </div>
 				<div class="infoc tilesLeft"> x{tilesLeft} </div>
 			</div>
 			<div class="name bottom">
-				<div>{windChar.get(playerWinds.get("bottom")!)}</div>
+				<div>{windChar[getPlayerWind(tableWind, "bottom")]}</div>
 				<div>{nameBottom}: </div>
 				<div>{pointsBottom}</div>
 			</div>
 			<div class="name top">
-				<div>{windChar.get(playerWinds.get("top")!)}</div>
+				<div>{windChar[getPlayerWind(tableWind, "top")]}</div>
 				<div>{nameTop}: </div>
 				<div>{pointsTop}</div>
 			</div>
 			<div class="name left">
-				<div>{windChar.get(playerWinds.get("left")!)}</div>
+				<div>{windChar[getPlayerWind(tableWind, "left")]}</div>
 				<div>{nameLeft}: </div>
 				<div>{pointsLeft}</div>
 			</div>
 			<div class="name right">
-				<div>{windChar.get(playerWinds.get("right")!)}</div>
+				<div>{windChar[getPlayerWind(tableWind, "right")]}</div>
 				<div>{nameRight}: </div>
 				<div>{pointsRight}</div>
 			</div>
@@ -139,7 +143,6 @@
 	.table {
 		position: fixed;
 		inset: 0;
-		pointer-events: none;
 		width: 100vmin;
 		height: 100vmin;
 		top: 50%;
@@ -247,5 +250,14 @@
 	}
 	.infoc.tilesLeft {
 		font-size: 3vmin;
+	}
+	.melds {
+		position: absolute;
+		right: 1vmin;  
+		bottom: 8vmin; 
+		width: fit-content;
+		height: fit-content;
+		z-index: 5;
+		transform-origin: bottom;
 	}
 </style>

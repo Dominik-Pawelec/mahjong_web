@@ -55,7 +55,7 @@ export type PublicPlayerData = {
 export type PlayerData = {
 	hand: Tile[];
 	wind: Wind;
-	avaliableMelds: Block[]
+	availableMelds: Block[]
 }
 
 export type Table = {
@@ -74,28 +74,47 @@ export type Table = {
 export type Meld = "chi" | "pon" | "kan" | "ron" | "tsumo" | "riichi" | "skip";
 
 export function sortTiles(tl: Tile[]): Tile[] {
-	return tl.sort((t1: Tile, t2: Tile): number => {
-		var kindOrder: Map<string, number> = new Map([['suit', 0], ['wind', 1], ['dragon', 2]])
-		var suitOrder: Map<string, number> = new Map([['pin', 0], ['sou', 1], ['man', 2]])
-		var windOrder: Map<string, number> = new Map([['east', 0], ['south', 1], ['west', 2], ['north', 3]])
-		var dragonOrder: Map<string, number> = new Map([['red', 0], ['white', 1], ['green', 2]])
-		if(kindOrder.get(t1.kind)! != kindOrder.get(t2.kind)!) { return kindOrder.get(t1.kind)! - kindOrder.get(t2.kind)! }
+	return [...tl].sort((t1: Tile, t2: Tile): number => {
+		var kindOrder: Record<Tile['kind'], number> = {'suit': 0, 'wind': 1, 'dragon': 2, 'closed': 3}
+		var suitOrder: Record<'pin' | 'sou' | 'man', number> = {'pin': 0, 'sou': 1, 'man': 2}
+		var windOrder: Record<Wind, number> = {'east': 0, 'south': 1, 'west': 2, 'north': 3}
+		var dragonOrder: Record<"red" | "white" | "green", number> = {'red': 0, 'white': 1, 'green': 2}
+		if(kindOrder[t1.kind] != kindOrder[t2.kind]) { return kindOrder[t1.kind] - kindOrder[t2.kind] }
 		if(t1.kind == "suit" && t2.kind == "suit") {
-			if(suitOrder.get(t1.suit)! != suitOrder.get(t2.suit)!) { return suitOrder.get(t1.suit)! - suitOrder.get(t2.suit)!}
+			if(suitOrder[t1.suit] != suitOrder[t2.suit]) { return suitOrder[t1.suit] - suitOrder[t2.suit]}
 			const t1v: number = (t1.value === 5 ? (t1.isRed ? 5 : 5.1) : t1.value)
 			const t2v: number = (t2.value === 5 ? (t2.isRed ? 5 : 5.1) : t2.value)
 			return t1v - t2v;
 		}
 		else if (t1.kind == "wind" && t2.kind == "wind") {
-			return windOrder.get(t1.value)! - windOrder.get(t2.value)!
+			return windOrder[t1.value] - windOrder[t2.value]
 		}
 		else if (t1.kind == "dragon" && t2.kind == "dragon") {
-			return dragonOrder.get(t1.value)! - dragonOrder.get(t2.value)!
+			return dragonOrder[t1.value] - dragonOrder[t2.value]
 		}
 		return 0// should never happen
 	})
 }
 
-export function sameTile(t1: Tile, t2: Tile): boolean {
-	return JSON.stringify(t1) === JSON.stringify(t2);
+export function sameTile(t1: Tile, t2: Tile, redMode: "ignoreRed" | "compareRed"): boolean {
+	if(t1.kind === "closed" && t2.kind === "closed") { return true; }
+	if(t1.kind === "wind" && t2.kind === "wind") {
+		return t1.value === t2.value;
+	}
+	if(t1.kind === "dragon" && t2.kind === "dragon") {
+		return t1.value === t2.value;
+	}
+	if(t1.kind === "suit" && t2.kind === "suit") {
+		if(t1.suit === t2.suit) {
+			if(redMode === "ignoreRed") {
+				return t1.value === t2.value
+			} else {
+				if(t1.value === 5 && t2.value === 5) {
+					return t1.isRed === t2.isRed
+				}
+				return t1.value === t2.value
+			}
+		}
+	}
+	return false
 }

@@ -4,8 +4,8 @@
 
 	const colorScheme: ColorScheme = getContext("colorScheme")!;
 
-	let borderColor = new Map<ColorScheme, string>([["light", "black"], ["dark", "white"]]).get(colorScheme)!
-	let backgroundColor = new Map<ColorScheme, string>([["light", "white"], ["dark", "black"]]).get(colorScheme)!
+	const borderColor: string = ({light: "black", dark: "white"} as Record<ColorScheme, string>)[colorScheme]
+	const backgroundColor: string = ({light: "white", dark: "black"} as Record<ColorScheme, string>)[colorScheme]
 
 </script>
 

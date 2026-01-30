@@ -3,7 +3,7 @@
 	import type { Block, Wind, Tile } from '@common/mahjonh_types';
 	import {getContext} from 'svelte'
 	import type {Direction} from '../common.ts'
-    import { getPosition } from '../common';
+    import { getPlayerPosition } from '../common';
 	import { sameTile, sortTiles } from "@common/mahjonh_types"
 
 	const playerWind: Wind = getContext("playerWind");
@@ -11,53 +11,56 @@
 	export let block: Block;
 	
 	type TileAndMeta = {
-		tile: Tile[];
+		tile: Tile;
+		tile2?: Tile;
 		rotation: boolean;
 	}
 
-	const stolenDir: Direction = getPosition(block.player!, playerWind)
-	if(stolenDir === "bottom") {
-		console.log("Somehow you stole from yourself!?"); //TODO: Raise and error?
-	}
-	const stolenIdx = new Map<Direction, number>([["left", 0], ["top", 1], ["right", 2]]).get(stolenDir)!
+	$: tilesToDraw = new Array<TileAndMeta>();
+	$: {
+		const newTiles: TileAndMeta[] = [];
 
-	let tilesToDraw: TileAndMeta[] = new Array();
-	if(block.kind === "chi") {
-		const nonStolenTiles: Tile[] = sortTiles(block.tiles.filter(x => !sameTile(x, block.stolenTile)))
-		tilesToDraw.push({tile: new Array(block.stolenTile), rotation: true})
-		for(let t of nonStolenTiles) {
-			tilesToDraw.push({tile: new Array(t), rotation: false})
-		}
-	}
-	else if (block.kind === "pon") {
-		for(let i = 0; i < 3; ++i) {
-			tilesToDraw.push({tile: new Array(block.tile), rotation: i === stolenIdx})
-		}
-	}
-	else if (block.kind === "kan") {
-		if(block.type === "open") {
-			for(let i = 0; i < 2; ++i) {
-				tilesToDraw.push({tile: new Array(block.tile), rotation: i === stolenIdx})
+		if(block.kind === "chi") {
+			const nonStolenTiles: Tile[] = sortTiles(block.tiles.filter(x => !sameTile(x, block.stolenTile, "compareRed")))
+			newTiles.push({tile: block.stolenTile, rotation: true})
+			for(let t of nonStolenTiles) {
+				newTiles.push({tile: t, rotation: false})
 			}
-			tilesToDraw.push({tile: new Array(block.tile), rotation: false})
-			tilesToDraw.push({tile: new Array(block.tile), rotation: 2 === stolenIdx})
 		}
-		else if (block.type === "closed") {
-			tilesToDraw.push({tile: new Array({kind: "closed"}), rotation: false})
-			tilesToDraw.push({tile: new Array(block.tile), rotation: false})
-			tilesToDraw.push({tile: new Array(block.tile), rotation: false})
-			tilesToDraw.push({tile: new Array({kind: "closed"}), rotation: false})
-		}
-		else if (block.type === "added") {
+		else if (block.kind === "pon") {
+			const stolenIdx: number = ({left: 0, top: 1, right: 2} as Record<Direction, number>)[getPlayerPosition(block.player, playerWind)];
 			for(let i = 0; i < 3; ++i) {
-				if(i === stolenIdx) {
-					tilesToDraw.push({tile: new Array(block.tile, block.tile), rotation: true})
+				newTiles.push({tile: block.tile, rotation: i === stolenIdx})
+			}
+		}
+		else if (block.kind === "kan") {
+			if(block.type === "open") {
+				const stolenIdx: number = ({left: 0, top: 1, right: 2} as Record<Direction, number>)[getPlayerPosition(block.player, playerWind)];
+				for(let i = 0; i < 2; ++i) {
+					newTiles.push({tile: block.tile, rotation: i === stolenIdx})
 				}
-				else {
-					tilesToDraw.push({tile: new Array(block.tile), rotation: false})
+				newTiles.push({tile: block.tile, rotation: false})
+				newTiles.push({tile: block.tile, rotation: 2 === stolenIdx})
+			}
+			else if (block.type === "closed") {
+				newTiles.push({tile: {kind: "closed"}, rotation: false})
+				newTiles.push({tile: block.tile, rotation: false})
+				newTiles.push({tile: block.tile, rotation: false})
+				newTiles.push({tile: {kind: "closed"}, rotation: false})
+			}
+			else if (block.type === "added") {
+				const stolenIdx: number = ({left: 0, top: 1, right: 2} as Record<Direction, number>)[getPlayerPosition(block.player, playerWind)];
+				for(let i = 0; i < 3; ++i) {
+					if(i === stolenIdx) {
+						newTiles.push({tile: block.tile, tile2: block.tile, rotation: true})
+					}
+					else {
+						newTiles.push({tile: block.tile, rotation: false})
+					}
 				}
 			}
 		}
+		tilesToDraw = newTiles;
 	}
 
 </script>
@@ -66,9 +69,10 @@
 	<div class="block">
 		{#each tilesToDraw as tiles}
 			<div class="block-col">
-				{#each tiles.tile as t}
-					<TileHTML rotated={tiles.rotation} tile={t} />
-				{/each}
+				<TileHTML rotated={tiles.rotation} tile={tiles.tile} />
+				{#if tiles.tile2 !== undefined}
+					<TileHTML rotated={tiles.rotation} tile={tiles.tile2} />
+				{/if}
 			</div>
 		{/each}
 	</div>

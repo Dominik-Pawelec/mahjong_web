@@ -9,13 +9,14 @@
 	export let blocks: Block[];
 	export let discards: Tile[];
 	export let riichiIdx: number;
+	export let discardCallback: ((tile: Tile) => void) | undefined = undefined;
 </script>
 
 <main>
 	<div class="hand">
 		<div class="hand-col">
 			<div class="col-gap">
-				{#if riichiIdx !== -1}
+				{#if riichiIdx !== undefined}
 					<RiichiHTML />
 				{/if}
 				<DiscardsHTML discards={discards} riichiIdx={riichiIdx} />
@@ -23,7 +24,7 @@
 			<div class="hand-row">
 				<div class="tiles">
 					{#each hand as t}
-						<TileHTML rotated={false} tile={t}/>
+						<TileHTML rotated={false} tile={t} callback={discardCallback}/>
 					{/each}
 				</div>
 				<BlocksHTML blocks={blocks}/>
