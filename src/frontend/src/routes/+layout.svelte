@@ -18,7 +18,6 @@
 </div>
 
 <style>
-	/* app wrapper */
 	.app {
 		display: flex;
 		flex-direction: column;
@@ -30,7 +29,6 @@
 		font-family: system-ui, sans-serif;
 	}
 
-	/* header */
 	header {
 		flex: 0 0 auto;
 		display: flex;
@@ -39,6 +37,7 @@
 		padding: 1rem 2rem;
 		background: rgba(0, 0, 0, 0.3);
 		backdrop-filter: blur(10px);
+		flex-shrink: 0;
 	}
 
 	h2 {
@@ -53,8 +52,8 @@
 
 	nav button {
 		margin-left: 1rem;
-		background: transparent;
-		border: 1px solid #475569;
+		background: #202540;
+		border: 0px solid #475569;
 		color: white;
 		padding: 0.4rem 0.8rem;
 		border-radius: 8px;
@@ -65,7 +64,6 @@
 		background: #334155;
 	}
 
-	/* main wypełnia resztę przestrzeni po headerze */
 	main {
 		flex: 1 1 auto;
 		display: flex;
