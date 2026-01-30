@@ -1,3 +1,29 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html, body, #svelte {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	background-color: #252525;
+	font-family: system-ui, sans-serif;
+}
+
+header h1,
+header h2,
+header h3 {
+	flex-shrink: 0;
+	white-space: nowrap;
+	min-width: 0;
+}
+
 @font-face {
 	font-family: 'yomogi';
 	src: url('/static/assets/fonts/yomogi/Yomogi-Regular.ttf');
@@ -20,8 +46,4 @@
 	font-weight: normal;
 	font-style: normal;
 	font-display: swap;
-}
-
-body {
-	background-color: #252525;
 }
