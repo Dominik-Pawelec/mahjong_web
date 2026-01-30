@@ -1,6 +1,6 @@
-import {Call, Tile} from "./game_types";
+import {Call, Tile, PlayerDiscardResponse, PlayerSpecialResponse} from "./game_types";
 import { allCalls } from "./game_types";
-import { sameTile } from "./game_types";
+import { sameTile } from "@common/mahjonh_types";
 
 export class Player {
     hand : Tile[];
@@ -27,34 +27,34 @@ export class Player {
         }
         return tile;
     }
-    public discard(tile_id : number) : Tile {
-        var tile_discarded = this.hand[tile_id];
-        this.hand.splice(tile_id, 1);
-        if(tile_discarded === undefined){
+    public discard(tile: Tile) : Tile {
+        var tile_discarded = this.hand.find(x => {sameTile(x, tile, "compareRed")});
+        if(tile_discarded == undefined){
             throw Error("improper discarded tile");
         }
+        var tile_id = this.hand.indexOf(tile_discarded);
+        this.hand.splice(tile_id, 1);
         this.river.push(tile_discarded);
         return tile_discarded;
     }
-    public takeAction(tile : Tile | undefined) : Promise<number> {
+    public takeAction(tile : Tile | undefined) : Promise<PlayerDiscardResponse> {
         return new Promise((resolve) => {
             this.action_resolver = resolve;
             this.socket?.emit("your choice", tile?.toString())
         });
     };
-    public takeSpecialAction(calls : Call []) : Promise<Call> {
+    public takeSpecialAction(calls : Call []) : Promise<PlayerSpecialResponse> {
         return new Promise(resolve => {
             this.special_action_resolver = resolve;
             this.socket?.emit("special action", { calls });
         });
     };
-    public resolveAction(tile_id: number) {
-        this.action_resolver?.(tile_id);
+    public resolveAction(tile : PlayerDiscardResponse) {
+        this.action_resolver?.(tile);
         this.action_resolver = undefined;
     }
 
-    public resolveSpecialAction(call: Call) {
-        if (!allCalls.includes(call)) call = "skip";
+    public resolveSpecialAction(call: PlayerSpecialResponse) {
         this.special_action_resolver?.(call);
         this.special_action_resolver = undefined;
     }
@@ -78,7 +78,7 @@ export class Player {
             } catch (Error){}
         }*/
         //PON and KAN
-        var nr_of_t = this.hand.filter(x => sameTile(x, tile)).length;
+        var nr_of_t = this.hand.filter(x => sameTile(x, tile, "ignoreRed")).length;
         if(nr_of_t >= 3){
             output.push("kan");
             output.push("pon");
@@ -123,7 +123,7 @@ export class Player {
     }
 
     public getIndex(tile : Tile) : number{
-        var tile_from_hand = this.hand.find(x => sameTile(x, tile));
+        var tile_from_hand = this.hand.find(x => sameTile(x, tile, "ignoreRed"));
         if(tile_from_hand === undefined){
             return -1;
         }

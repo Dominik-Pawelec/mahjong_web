@@ -3,6 +3,7 @@ import { Call, Tile } from "./game_types";
 import { sortTiles } from "@common/mahjonh_types";
 import { generate_all_tiles } from "./game_types";
 import { Player } from "./player";
+import {PlayerSpecialResponse} from "./game_types"
 
 export class Round {
     players : [Player, Player, Player, Player];
@@ -23,7 +24,7 @@ export class Round {
         console.log(tile_discarded);
         if(tile_discarded === undefined){return;}//TODO: implement better logic
         
-        const actions: Promise<{id : number; action : Call}>[] = [];
+        const actions: Promise<{id : number; action : PlayerSpecialResponse}>[] = [];
         for(const player2 of this.players){
             if(player2.id === player.id) {continue;}
 
@@ -41,7 +42,7 @@ export class Round {
 
         var players_actions : Call [] = ["skip","skip","skip","skip"];
         for (const result of results) {
-            players_actions[result.id] = result.action;
+            players_actions[result.id] = result.action.meld;
         }
         console.log(players_actions);
         
@@ -87,7 +88,7 @@ export class Round {
                 //handle chi
             }
             var tile_id = await player.takeAction(undefined);
-            var tile_discarded2 = player.discard(tile_id);
+            var tile_discarded2 = player.discard(tile_id.tile);
             await this.handle_discard(player, tile_discarded2);
         }
     }
@@ -95,13 +96,13 @@ export class Round {
         const player = this.players[this.turn_id];
         if(player != undefined){ 
             var tile : Tile | undefined = undefined;
-            sortTiles(player.hand);
+            //sortTiles(player.hand);
             if(draw){
                 tile = player.draw(this.wall);
                 emitGameState(this, this.players);
             }
             var tile_id = await player.takeAction(tile? tile : undefined);
-            var tile_discarded = player.discard(tile_id);
+            var tile_discarded = player.discard(tile_id.tile);
             emitGameState(this, this.players);
             var handle = await this.handle_discard(player, tile_discarded);
         }

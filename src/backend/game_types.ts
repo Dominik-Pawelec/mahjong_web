@@ -4,6 +4,14 @@ export const allCalls : Call[] = ["skip","chi", "pon", "kan", "ron", "tsumo"]
 import type * as Common from "@common/mahjonh_types";
 
 export type Tile = Exclude<Common.Tile, {kind : "closed"}>;
+export type PlayerDiscardResponse = {
+    kind: "discard"
+    tile: Tile
+};
+export type PlayerSpecialResponse = {
+    kind: "meld"
+    meld: Call
+};
 
 export function generate_all_tiles() : Tile[] {
     var output : Tile[] = [];
@@ -61,13 +69,6 @@ export function generate_all_tiles() : Tile[] {
         
     }
     return output;
-}
-
-export function sameTile(t1 : Tile, t2 : Tile) : boolean{
-    if(t1.value === 5 && t2.value === 5){
-        return true;
-    }
-    return JSON.stringify(t1) === JSON.stringify(t2);
 }
 /*
 function getPairs(tiles : Tile[]) : Tile[] {
