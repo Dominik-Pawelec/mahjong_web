@@ -1,6 +1,6 @@
 import {Call, Tile, PlayerDiscardResponse, PlayerSpecialResponse} from "./game_types";
 import { allCalls } from "./game_types";
-import { sameTile } from "@common/mahjonh_types";
+import { sameTile } from "../common/mahjonh_types";
 
 export class Player {
     hand : Tile[];

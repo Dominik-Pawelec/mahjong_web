@@ -1,6 +1,6 @@
 import { NONAME } from "dns";
 import { Call, Tile } from "./game_types";
-import { sortTiles } from "@common/mahjonh_types";
+import { sortTiles } from "../common/mahjonh_types";
 import { generate_all_tiles } from "./game_types";
 import { Player } from "./player";
 import {PlayerSpecialResponse} from "./game_types"

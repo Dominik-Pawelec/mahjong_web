@@ -1,7 +1,7 @@
 export type Call = "skip" | "chi" | "pon" | "kan" | "ron" | "tsumo";
 export const allCalls : Call[] = ["skip","chi", "pon", "kan", "ron", "tsumo"]
 
-import type * as Common from "@common/mahjonh_types";
+import type * as Common from "../common/mahjonh_types";
 
 export type Tile = Exclude<Common.Tile, {kind : "closed"}>;
 export type PlayerDiscardResponse = {

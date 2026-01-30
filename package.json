@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "install-all": "npm install && cd src/frontend && npm install",
+    "install-all": "npm install && cd src/frontend && npm install && cd src/backend && npm install",
     "backend": "ts-node src/backend/server.ts",
     "frontend": "cd src/frontend && npm run dev"
   },

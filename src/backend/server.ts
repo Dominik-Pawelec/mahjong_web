@@ -6,10 +6,14 @@ import { Round, startGame} from "./game_logic";
 import http from "http";
 import path from "path"
 
+console.log("FILE EXECUTED");
+
 const app = express();
 const server = http.createServer(app);
 
+
 const io = new Server(server, {cors : {origin:""}});
+
 
 const port = 6060;
 app.set("view engine", "ejs");
@@ -27,6 +31,7 @@ server.listen(port, () => {
 const lobby : Player[] = [];
 
 var round : Round | undefined = undefined;
+
 
 //socket.io logic
 io.on("connection", (socket : any) => { //TODO: make proper typing, not any

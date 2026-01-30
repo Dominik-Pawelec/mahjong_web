@@ -1,5 +1,5 @@
-import { Tile, sameTile } from "./game_types"
-import { sortTiles } from "@common/mahjonh_types";
+import { Tile } from "./game_types"
+import { sortTiles, sameTile } from "../common/mahjonh_types";
 
 function getPairs(h : Tile[]) : Tile[]{
     const hand : Tile[] = JSON.parse(JSON.stringify(h));
@@ -12,7 +12,7 @@ function getPairs(h : Tile[]) : Tile[]{
             if(t1 === undefined || t2 === undefined){
                 continue;
             }
-            if(sameTile(t1, t2)){
+            if(sameTile(t1, t2, "ignoreRed")){
                 output.push(t1);
             }
         }
@@ -68,8 +68,8 @@ function getSequenceStartingWith(h : Tile[], t : Tile) : ([Tile, Tile, Tile] | u
             value : (val + 2) as (3 | 4 | 6 | 7 | 8 | 9),
         }
     }
-    const foundNextTile = hand.filter(x => sameTile(x, nextTile))[0];
-    const foundNextNextTile = hand.filter(x => sameTile(x, nextNextTile))[0];
+    const foundNextTile = hand.filter(x => sameTile(x, nextTile, "ignoreRed"))[0];
+    const foundNextNextTile = hand.filter(x => sameTile(x, nextNextTile, "ignoreRed"))[0];
     if(foundNextTile !== undefined && foundNextNextTile !== undefined){
         return [tile, foundNextTile, foundNextNextTile]
     }
@@ -80,7 +80,7 @@ function isWinningHandNoPairs(h : Tile[]){
     const hand : Tile[] = JSON.parse(JSON.stringify(h));
     if (hand[0] === undefined){return true;}
     const fstTile = hand[0];
-    const sameFstTile = hand.filter(tile => sameTile(tile, fstTile));
+    const sameFstTile = hand.filter(tile => sameTile(tile, fstTile, "ignoreRed"));
     if(sameFstTile.length >=3){
         var counter = 3;
         for(const tile of sameFstTile){
@@ -106,7 +106,7 @@ function isWinningHandNoPairs(h : Tile[]){
 function isWinningHand(h : Tile []){
     const pairs = getPairs(h);
     for(const pair of pairs){
-        const allPairs = h.filter(x => sameTile(x, pair))
+        const allPairs = h.filter(x => sameTile(x, pair, "ignoreRed"))
         if(allPairs.length < 2){
             continue; //something went wrong with function getPairs(h), should not happen
         }
