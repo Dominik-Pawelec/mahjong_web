@@ -64,15 +64,22 @@
 <main>
 	{#if callback !== undefined}
 		<div class="layout-box" style="width: {width}vmin; height: {height}vmin;">
-			<button class="tile" style=" --backPath: url({backPath}); --rotation: {rotation}; " on:click={handleClick}>
+			<button class="tile" style="
+				width: {baseWidth}vmin;
+				height: {baseHeight}vmin;
+				background-image: url({backPath});
+				transform: rotate({rotation}deg); 
+				" on:click={handleClick}>
 				<img src={path} alt={tile_text} class="img" />
 			</button>
 		</div>
 	{:else}
 		<div class="layout-box" style="width: {width}vmin; height: {height}vmin;">
 			<div class="tile" style="
-				--backPath: url({backPath});
-				--rotation: {rotation};
+				width: {baseWidth}vmin;
+				height: {baseHeight}vmin;
+				background-image: url({backPath});
+				transform: rotate({rotation}deg); 
 				">
 				<img src={path} alt={tile_text} class="img" />
 			</div>
@@ -89,12 +96,8 @@
 		background-repeat: no-repeat;
 		overflow: visible;
 		z-index: 2;
-		background-image: var(--backPath);
-		width: 100%;
-		height: 100%;
 		top: 50%;
 		left: 50%;
-		transform: rotate(var(--rotation)deg);
 	}
 	.layout-box {
 		display: flex;

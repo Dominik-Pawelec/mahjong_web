@@ -24,7 +24,7 @@ h1, h2, h3 {
 
 @font-face {
 	font-family: 'yomogi';
-	src: url('/static/assets/fonts/yomogi/Yomogi-Regular.ttf');
+	src: url('/assets/fonts/yomogi/Yomogi-Regular.ttf');
 	font-weight: normal;
 	font-style: normal;
 	font-display: swap;
@@ -32,7 +32,7 @@ h1, h2, h3 {
 
 @font-face {
 	font-family: 'sekaiwo';
-	src: url('/static/assets/fonts/sekaiwo/Sekaiwo-Regular.ttf');
+	src: url('/assets/fonts/sekaiwo/Sekaiwo-Regular.ttf');
 	font-weight: normal;
 	font-style: normal;
 	font-display: swap;
@@ -40,7 +40,7 @@ h1, h2, h3 {
 
 @font-face {
 	font-family: 'night-in-tokyo';
-	src: url('/static/assets/fonts/night-in-tokyo/NightinTokyo.ttf');
+	src: url('/assets/fonts/night-in-tokyo/NightinTokyo.ttf');
 	font-weight: normal;
 	font-style: normal;
 	font-display: swap;

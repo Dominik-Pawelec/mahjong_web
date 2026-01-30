@@ -9,6 +9,7 @@
 	const playerWind: Wind = getContext("playerWind");
 
 	export let block: Block;
+	export let sDisplay: boolean | undefined = undefined;
 	
 	type TileAndMeta = {
 		tile: Tile;
@@ -19,43 +20,64 @@
 	$: tilesToDraw = new Array<TileAndMeta>();
 	$: {
 		const newTiles: TileAndMeta[] = [];
-
-		if(block.kind === "chi") {
-			const nonStolenTiles: Tile[] = sortTiles(block.tiles.filter(x => !sameTile(x, block.stolenTile, "compareRed")))
-			newTiles.push({tile: block.stolenTile, rotation: true})
-			for(let t of nonStolenTiles) {
-				newTiles.push({tile: t, rotation: false})
+		if(sDisplay === true) {
+			switch(block.kind) {
+				case 'chi':
+					const tilesChi: Tile[] = sortTiles(block.tiles);
+					for(const t of block.tiles) {
+						newTiles.push({tile: t, rotation: false});
+					}
+				break;
+				case 'pon':
+					for(let i = 0; i < 3; ++i) {
+						newTiles.push({tile: block.tile, rotation: false})
+					}
+				break;
+				case 'kan':
+					for(let i = 0; i < 4; ++i) {
+						newTiles.push({tile: block.tile, rotation: false})
+					}
+				break;
 			}
 		}
-		else if (block.kind === "pon") {
-			const stolenIdx: number = ({left: 0, top: 1, right: 2} as Record<Direction, number>)[getPlayerPosition(block.player, playerWind)];
-			for(let i = 0; i < 3; ++i) {
-				newTiles.push({tile: block.tile, rotation: i === stolenIdx})
-			}
-		}
-		else if (block.kind === "kan") {
-			if(block.type === "open") {
-				const stolenIdx: number = ({left: 0, top: 1, right: 2} as Record<Direction, number>)[getPlayerPosition(block.player, playerWind)];
-				for(let i = 0; i < 2; ++i) {
-					newTiles.push({tile: block.tile, rotation: i === stolenIdx})
+		else {
+			if(block.kind === "chi") {
+				const nonStolenTiles: Tile[] = sortTiles(block.tiles.filter(x => !sameTile(x, block.stolenTile, "compareRed")))
+				newTiles.push({tile: block.stolenTile, rotation: true})
+				for(const t of nonStolenTiles) {
+					newTiles.push({tile: t, rotation: false})
 				}
-				newTiles.push({tile: block.tile, rotation: false})
-				newTiles.push({tile: block.tile, rotation: 2 === stolenIdx})
 			}
-			else if (block.type === "closed") {
-				newTiles.push({tile: {kind: "closed"}, rotation: false})
-				newTiles.push({tile: block.tile, rotation: false})
-				newTiles.push({tile: block.tile, rotation: false})
-				newTiles.push({tile: {kind: "closed"}, rotation: false})
-			}
-			else if (block.type === "added") {
+			else if (block.kind === "pon") {
 				const stolenIdx: number = ({left: 0, top: 1, right: 2} as Record<Direction, number>)[getPlayerPosition(block.player, playerWind)];
 				for(let i = 0; i < 3; ++i) {
-					if(i === stolenIdx) {
-						newTiles.push({tile: block.tile, tile2: block.tile, rotation: true})
+					newTiles.push({tile: block.tile, rotation: i === stolenIdx})
+				}
+			}
+			else if (block.kind === "kan") {
+				if(block.type === "open") {
+					const stolenIdx: number = ({left: 0, top: 1, right: 2} as Record<Direction, number>)[getPlayerPosition(block.player, playerWind)];
+					for(let i = 0; i < 2; ++i) {
+						newTiles.push({tile: block.tile, rotation: i === stolenIdx})
 					}
-					else {
-						newTiles.push({tile: block.tile, rotation: false})
+					newTiles.push({tile: block.tile, rotation: false})
+					newTiles.push({tile: block.tile, rotation: 2 === stolenIdx})
+				}
+				else if (block.type === "closed") {
+					newTiles.push({tile: {kind: "closed"}, rotation: false})
+					newTiles.push({tile: block.tile, rotation: false})
+					newTiles.push({tile: block.tile, rotation: false})
+					newTiles.push({tile: {kind: "closed"}, rotation: false})
+				}
+				else if (block.type === "added") {
+					const stolenIdx: number = ({left: 0, top: 1, right: 2} as Record<Direction, number>)[getPlayerPosition(block.player, playerWind)];
+					for(let i = 0; i < 3; ++i) {
+						if(i === stolenIdx) {
+							newTiles.push({tile: block.tile, tile2: block.tile, rotation: true})
+						}
+						else {
+							newTiles.push({tile: block.tile, rotation: false})
+						}
 					}
 				}
 			}

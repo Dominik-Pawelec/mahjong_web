@@ -50,12 +50,21 @@ export type PublicPlayerData = {
 	discards: Tile[];
 	blocks: Block[];
 	points: number;
+	name: string;
+	riichiIdx: number;
 }
 
-export type PlayerData = {
+export type Meld = "chi" | "pon" | "kan" | "ron" | "tsumo" | "riichi" | "skip";
+
+export type MeldOption = {
+	meld: Meld;
+	//NOTE: When Meld is not chi, pon or kan blocks must be an empty array
+	blocks: Block[];
+}
+
+export type PrivatePlayerData = {
 	hand: Tile[];
-	wind: Wind;
-	availableMelds: Block[]
+	availableMelds: MeldOption[];
 }
 
 export type Table = {
@@ -65,13 +74,11 @@ export type Table = {
 } & {
 	[P in Wind]: {
 		publicData: PublicPlayerData;
-		privateData: PlayerData;
-		playerName: string;
-		playerPoints: number;
+		privateData: PrivatePlayerData;
+		name: string;
+		points: number;
 	}
 }
-
-export type Meld = "chi" | "pon" | "kan" | "ron" | "tsumo" | "riichi" | "skip";
 
 export function sortTiles(tl: Tile[]): Tile[] {
 	return [...tl].sort((t1: Tile, t2: Tile): number => {

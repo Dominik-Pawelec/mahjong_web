@@ -1,31 +1,31 @@
-import type {Wind, Tile, Meld} from '@common/mahjonh_types'
+import type {Wind, Meld, MeldOption} from '@common/mahjonh_types'
 
 export type Direction = "left" | "right" | "top" | "bottom";
 
-export function getPlayerPosition(tw: Wind, pw: Wind): Direction {
+export function getPlayerPosition(myWind: Wind, playerWind: Wind): Direction {
 	return ({
 		east: {east: "bottom", south: "right", west: "top", north: "left"},
 		south: {south: "bottom", west: "right", north: "top", east: "left"},
 		west: {west: "bottom", north: "right", east: "top", south: "left"},
 		north: {north: "bottom", east: "right", south: "top", west: "left"}
-	} as Record<Wind, Record<Wind, Direction>>)[pw][tw];
+	} as Record<Wind, Record<Wind, Direction>>)[playerWind][myWind];
 }
 
-export function getPlayerWind(tw: Wind, pd: Direction): Wind {
+export function getPlayerWind(myWind: Wind, playerDirection: Direction): Wind {
 	return ({
 		east: {bottom: "east", right: "south", top: "west", left: "north"},
 		south: {bottom: "south", right: "west", top: "north", left: "east"},
 		west: {bottom: "west", right: "north", top: "east", left: "south"},
 		north: {bottom: "north", right: "east", top: "south", left: "west"}
-	} as Record<Wind, Record<Direction, Wind>>)[tw][pd];
+	} as Record<Wind, Record<Direction, Wind>>)[myWind][playerDirection];
 }
 
-export function sortMelds(ml: Meld[]): Meld[] {
-	return [...ml].sort((m1: Meld, m2: Meld): number => {
+export function sortMeldOpts(ml: MeldOption[]): MeldOption[] {
+	return [...ml].sort((m1: MeldOption, m2: MeldOption): number => {
 		const valMap: Record<Meld, number> = {
 			tsumo: 0, ron: 1, riichi: 2, kan: 3, pon: 4, chi: 5, skip: 6
 		};
-		return valMap[m1] - valMap[m2];
+		return valMap[m1.meld] - valMap[m2.meld];
 	})	
 }
 
