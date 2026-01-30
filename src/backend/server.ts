@@ -2,7 +2,7 @@ import express from "express";
 import type { Request, Response } from "express";
 import { Server } from "socket.io";
 import { Player } from "./player";
-import { Round, startGame} from "./game_logic";
+import { Game} from "./game_logic";
 import http from "http";
 import path from "path"
 
@@ -30,7 +30,7 @@ server.listen(port, () => {
 
 const lobby : Player[] = [];
 
-var round : Round | undefined = undefined;
+var game : Game | undefined = undefined;
 
 
 //socket.io logic
@@ -41,48 +41,38 @@ io.on("connection", (socket : any) => { //TODO: make proper typing, not any
     lobby.push(new_player);
     
     if(lobby.length === 4){
-        round = new Round(0, [...lobby] as [Player, Player, Player, Player]);
-        const state = round?.visibleToString()
-        if(round){
-            lobby.forEach(player => {
-                const player_hand = player.toString();
-                player.socket.emit("gameState", {state, player_hand});
-            });
-        }
-        startGame(round);
+        game = new Game(lobby[0],lobby[1],lobby[2],lobby[3]);
     }
     
     socket.on("choice", async (data : any) => {
         const player = lobby.find(p => p.socket.id === socket.id);
-        const state = round?.visibleToString()
-        if(round){
+        if(game){
             lobby.forEach(player => {
                 const player_hand = player.toString();
-                player.socket.emit("gameState", {state, player_hand});
+                player.socket.emit("gameState", {game, player_hand});
             });
         }
         player?.resolveAction(data);
-        if(round){
+        if(game){
             lobby.forEach(player => {
                 const player_hand = player.toString();
-                player.socket.emit("gameState", {state, player_hand});
+                player.socket.emit("gameState", {game, player_hand});
             });
         }
     });
     socket.on("specialChoice", async (data : any) => {
         const player = lobby.find(p => p.socket.id === socket.id);
-        const state = round?.visibleToString()
-        if(round){
+        if(game){
             lobby.forEach(player => {
                 const player_hand = player.toString();
-                player.socket.emit("gameState", {state, player_hand});
+                player.socket.emit("gameState", {game, player_hand});
             });
         }
         player?.resolveSpecialAction(data.call);
-        if(round){
+        if(game){
             lobby.forEach(player => {
                 const player_hand = player.toString();
-                player.socket.emit("gameState", {state, player_hand});
+                player.socket.emit("gameState", {game, player_hand});
             });
         }
     });

@@ -129,11 +129,27 @@ export class Round {
     public placeInLobby(){
         return this.players.find(x => x.socket === undefined);
     }
-
-
-
-
 }
+
+export class Game {
+    players : [Player, Player, Player, Player];
+    is_running : boolean;
+
+    public constructor(s0 : any, s1 : any, s2 : any, s3 : any){
+        this.players = [new Player(0, s0), new Player(1, s1), new Player(2, s2), new Player(3, s3)];
+        this.is_running = false;
+        this.run();
+    }
+    private async run(){
+        var turn_id = 0;
+        while(this.is_running && turn_id < 4){
+            const round = new Round(turn_id, this.players);
+            await round.main_loop();
+            turn_id ++;
+        }
+    }
+}
+
 /*
 (async () => {
     var game = new Round(0, [new Player(0,"0"), new Player(1,"1"), new Player(2,"2"), new Player(3,"3")]);
@@ -148,10 +164,4 @@ function emitGameState(round : Round, lobby : Player[]){
             palyer_hand: player.toString()
         })
     });
-}
-
-export async function startGame(round : Round){
-    for(var i = 0; i < 3; i++){
-        await round.main_loop();
-    }
 }

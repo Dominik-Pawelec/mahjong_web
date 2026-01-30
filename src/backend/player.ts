@@ -7,7 +7,7 @@ export class Player {
     open_blocks : Tile[][];
     public river : Tile[];
     public points : number;
-    public id: number;
+    public id: number; //TODO: wind
     public socket : any;
     public constructor(id : number, socket : any){
         this.id = id;
