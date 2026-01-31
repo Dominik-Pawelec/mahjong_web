@@ -22,6 +22,66 @@ h1, h2, h3 {
 	min-width: 0;
 }
 
+h1 {
+	font-size: 2.2rem;
+	margin-bottom: 1rem;
+}
+
+.card {
+	background: rgba(255, 255, 255, 0.05);
+	backdrop-filter: blur(10px);
+	border-radius: 16px;
+	width: 100%;
+	max-width: 40rem;
+	min-width: 20rem;
+	padding: 3rem;
+	text-align: center;
+	box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+button {
+	border: none;
+	border-radius: 10px;
+	padding: 0.75rem;
+	font-size: 1rem;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	width: 75%;
+}
+
+button.typ1 {
+	background: #22c55e;
+	color: #052e16;
+}
+button.typ1:hover { background: #16a34a; }
+
+button.typ2 {
+	background: #334155;
+	color: white;
+}
+button.typ2:hover { background: #475569; }
+
+button + button {
+	margin-top: 1rem;
+}
+
+input {
+	width: 75%;
+	padding: 0.8rem;
+	font-size: 1rem;
+	border: 3px solid #ccc;
+	border-radius: 10px;
+	outline: none;
+	box-sizing: border-box;
+	transition: all 0.2s ease;
+	display: block;
+	margin: 0 auto 1rem auto;
+}
+input:focus {
+	border-color: #4f46e5;
+	box-shadow: 0 0 0 2px #475569;
+}
+
 @font-face {
 	font-family: 'yomogi';
 	src: url('/assets/fonts/yomogi/Yomogi-Regular.ttf');

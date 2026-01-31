@@ -1,14 +1,20 @@
 <script lang="ts">
 	import '../app.css';
 	import { goto } from '$app/navigation';
+	import { user, type User } from '$lib/user';
 </script>
 
 <div class="app">
 	<header>
 		<h2 on:click={() => goto('/')}>🀄 Mahjong Web</h2>
 		<nav>
-			<button on:click={() => goto('/profile')}>Profile</button>
 			<button on:click={() => goto('/lobby')}>Play</button>
+			{#if $user}
+				<img src={$user.avatarUrl} alt="avatar" class="avatar" on:click={() => goto('/profile')}/>
+			{:else}
+				<button on:click={() => goto('/login')}>Log in</button>
+				<button on:click={() => goto('/register')}>Sign up</button>
+			{/if}
 		</nav>
 	</header>
 
@@ -59,6 +65,7 @@
 		border-radius: 8px;
 		cursor: pointer;
 		transition: 0.2s;
+		width: 5rem;
 	}
 	nav button:hover {
 		background: #334155;

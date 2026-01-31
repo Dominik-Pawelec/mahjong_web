@@ -1,58 +1,87 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-	import {writable} from 'svelte/store'
-	import {goto} from '$app/navigation'
-
-	const apiEndpoint = "chuj w dupie hlupie"
-	let playerCount = 0
-
-	async function fetchPlayerCount() {
-		try {
-			const response = await fetch(apiEndpoint);
-			if(!response.ok) throw new Error('Network response was not ok!');
-			const data = await response.json();
-			playerCount = data.count
-			if(playerCount === 4) goto("/game")
-		} catch (err) {
-			console.error('(Lobby) Failed to fetch player count:', err)
-		}
-	}
-
-	const dots_steps = ['.', '..', '...'];
-	let dots = "";
-
-	onMount(() => {
-		//TODO: Announce to the server that someone joined the lobby
-		fetchPlayerCount()
-		const fetchIntervalID = setInterval(fetchPlayerCount, 2500)
-		let dots_index = 0;
-		const dotsIntervalID = setInterval(() => {
-			dots = dots_steps[dots_index++];
-			dots_index = dots_index % dots_steps.length;
-		}, 1000);
-
-		return () => {
-			clearInterval(fetchIntervalID)
-			clearInterval(dotsIntervalID)
-			//TODO: Announce to the server that someone has left the lobby
-		}
-	})
-
+    import { rooms } from '$lib/stores/rooms';
+	import { goto } from '$app/navigation'
 </script>
 
-<main>
-	<h1>Waiting for players ({playerCount}/4){dots}</h1>
-	<button on:click={() => {goto('/')}}>Go back</button>
+<main class="card">
+	<h1>Available Games</h1>
+
+	<div class="room-list">
+		{#each $rooms as room}
+			<div class="room-card">
+				<div>
+					<h3 title={room.name}>{room.name}</h3>
+					<p>{room.players} / 4</p>
+				</div>
+
+				<button class="typ2"
+					disabled={room.players >= 4}
+					on:click={() => goto(`/room/${room.id}`)}
+				>
+					Join
+				</button>
+			</div>
+		{/each}
+	</div>
+
+	<button class="typ2" on:click={() => goto('/')}>
+		Return
+	</button>
 </main>
 
 <style>
-	main {
+	.room-list {
 		display: flex;
-		justify-content: flex-start;
-		align-items: center;
 		flex-direction: column;
-		min-height: 100vh;
-		padding-top: 20vh;
-		font-family: sans-serif;
+		align-items: center;
+		gap: 1rem;
+		padding: 0.5rem;
+		width: 100%;
+		margin-bottom: 2rem;
+		background: rgba(255, 255, 255, 0.02);
+		border-radius: 10px;
+
+		max-height: 50vh;
+		overflow-y: auto;
+	}
+
+	.room-card {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1rem;
+		width: 100%;
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 10px;
+		box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+		gap: 1rem;
+	}
+
+	.room-card div {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.room-card h3 {
+		margin: 0 0 0.25rem 0;
+		font-size: 1.1rem;
+	}
+
+	.room-card p {
+		margin: 0;
+		color: #555;
+		font-size: 0.9rem;
+	}
+
+	.room-card button {
+		width: 5rem;
+		flex-shrink: 0;
+	}
+
+	.card {
+		min-width: 30rem;
 	}
 </style>
