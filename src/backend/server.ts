@@ -11,16 +11,14 @@ import { ServerData } from "@common/comms";
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server, {cors : {origin:""}});
+const io = new Server(server, {
+    cors : {
+        origin : "http://localhost:6060",
+        methods : ["GET", "POST"]
+    }
+});
 
 const port = 6060;
-app.set("view engine", "ejs");
-app.set('views', path.join(__dirname, '../../views'));
-
-
-app.get("/game", (req : Request, res : Response) => {
-    res.render("game");
-});
 
 server.listen(port, () => {
     console.log("server runs at " + port);

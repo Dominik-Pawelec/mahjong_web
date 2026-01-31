@@ -1,6 +1,7 @@
 import {Call, Tile, PlayerDiscardResponse, PlayerSpecialResponse} from "./game_types";
 import { allCalls } from "./game_types";
 import { Block, PrivatePlayerData, PublicPlayerData, sameTile, Wind } from "../common/mahjonh_types";
+import { PlayerResponse } from "@common/comms";
 
 export class Player {
     hand : Tile[];
@@ -21,8 +22,8 @@ export class Player {
         this.name = wind;
         this.id = ["east", "south", "west", "north"].indexOf(wind);
     }
-    private action_resolver : any;
-    private special_action_resolver : any;
+    private action_resolver : undefined | ((res : PlayerDiscardResponse) => void) ;// : Promise<PlayerDiscardResponse> | undefined;
+    private special_action_resolver: undefined | ((res : PlayerSpecialResponse) => void) ;// : Promise<PlayerSpecialResponse> | undefined;
 
     public draw(wall : Tile[]){
         let tile = wall.pop();
