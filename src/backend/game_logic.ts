@@ -1,6 +1,6 @@
 import { NONAME } from "dns";
 import { Call, Tile } from "./game_types";
-import { sortTiles } from "../common/mahjonh_types";
+import { sortTiles, Table, Wind } from "../common/mahjonh_types";
 import { generate_all_tiles } from "./game_types";
 import { Player } from "./player";
 import {PlayerSpecialResponse} from "./game_types"
@@ -26,13 +26,13 @@ export class Round {
         
         const actions: Promise<{id : number; action : PlayerSpecialResponse}>[] = [];
         for(const player2 of this.players){
-            if(player2.id === player.id) {continue;}
+            if(player2.wind === player.wind) {continue;}
 
             const calls = player2.possibleCallsOn(tile_discarded, player.id);
             if(calls.length === 1) {continue;}
 
             actions.push(
-                player.takeSpecialAction(calls).then(action => ({
+                player2.takeSpecialAction(calls).then(action => ({
                     id : player2.id,
                     action : action
                 }))
@@ -134,18 +134,59 @@ export class Round {
 export class Game {
     players : [Player, Player, Player, Player];
     is_running : boolean;
+    turn_id : number;
+    round : Round;
 
     public constructor(s0 : any, s1 : any, s2 : any, s3 : any){
-        this.players = [new Player(0, s0), new Player(1, s1), new Player(2, s2), new Player(3, s3)];
+        this.players = [new Player("east", s0), new Player("south", s1), new Player("west", s2), new Player("north", s3)];
         this.is_running = false;
+        this.turn_id = 0;
+        this.round = new Round(this.turn_id, this.players);
+        console.log("the game has sarted");
         this.run();
     }
     private async run(){
-        var turn_id = 0;
-        while(this.is_running && turn_id < 4){
-            const round = new Round(turn_id, this.players);
-            await round.main_loop();
-            turn_id ++;
+        while(this.is_running && this.turn_id < 4){
+            this.round = new Round(this.turn_id, this.players);
+            await this.round.main_loop();
+            this.turn_id ++;
+        }
+    }
+/*
+export type Table = {
+    roundWind: Wind;
+    doraIndicators: Tile[];
+    tilesLeft: number;
+} & {
+    [P in Wind]: {
+        publicData: PublicPlayerData;
+        privateData: PrivatePlayerData;
+        name: string;
+        points: number;
+    }
+}
+ */
+    public getTable() : Table {
+        return {
+            roundWind: this.players[this.turn_id]?.wind as Wind,
+            doraIndicators: [],
+            tilesLeft :this.round.wall.length - 14,
+            ...this.players.reduce(
+            (acc, player) => {
+                acc[player.wind] = {
+                    publicData : player.getPublicData(),
+                    privateData : player.getPrivateData(),
+                    name : player.name,
+                    points : player.points
+                };
+                return acc
+            },{} as Table extends infer T 
+                ? T extends {[K in Wind] : infer V}
+                    ? {[K in Wind] : V}
+                    : never
+                : never
+            )
+            
         }
     }
 }
@@ -161,7 +202,7 @@ function emitGameState(round : Round, lobby : Player[]){
     lobby.forEach(player => {
         player.socket.emit("gameState", {
             state : state,
-            palyer_hand: player.toString()
+            player_hand: player.toString()
         })
     });
 }

@@ -1,21 +1,25 @@
 import {Call, Tile, PlayerDiscardResponse, PlayerSpecialResponse} from "./game_types";
 import { allCalls } from "./game_types";
-import { sameTile } from "../common/mahjonh_types";
+import { Block, PrivatePlayerData, PublicPlayerData, sameTile, Wind } from "../common/mahjonh_types";
 
 export class Player {
     hand : Tile[];
-    open_blocks : Tile[][];
+    open_blocks : Block[];
     public river : Tile[];
     public points : number;
-    public id: number; //TODO: wind
+    public wind: Wind; //TODO: wind
     public socket : any;
-    public constructor(id : number, socket : any){
-        this.id = id;
+    public name : string;
+    public id : number;
+    public constructor(wind : Wind, socket : any){
+        this.wind = wind;
         this.hand = [];
         this.open_blocks = [];
         this.river = [];
         this.points = 25000;
         this.socket = socket;
+        this.name = wind;
+        this.id = ["east", "south", "west", "north"].indexOf(wind);
     }
     private action_resolver : any;
     private special_action_resolver : any;
@@ -97,8 +101,24 @@ export class Player {
         return output;
     }
 
+    public getPublicData() : PublicPlayerData{
+        return {
+            discards : this.river,
+            blocks : this.open_blocks,
+            points : this.points,
+            name : this.wind, // TODO: add valid name
+            riichiIdx : 0 // TODO: add riichi
+        }
+    }
+    public getPrivateData() : PrivatePlayerData{
+        return {
+            hand : this.hand,
+            availableMelds : [] // TODO: ask Oskar what does it mean
+        }
+    }
+
     public toString() : string {
-        var output = "Player id: " + this.id.toString() + "\nriver:";
+        var output = "Player id: " + this.wind + "\nriver:";
         var counter = 0;
         for(let tile of this.river){
             if(counter%6 === 0 && counter < 18){ output += "\n"; }
