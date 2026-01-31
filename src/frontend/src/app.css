@@ -48,21 +48,29 @@ button {
 	transition: all 0.2s ease;
 	width: 75%;
 }
+button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
 
 button.typ1 {
 	background: #22c55e;
 	color: #052e16;
 }
 button.typ1:hover { background: #16a34a; }
+button.typ1:disabled {
+	background: #a7f3d0;
+	color: #052e16;
+}
 
 button.typ2 {
 	background: #334155;
 	color: white;
 }
 button.typ2:hover { background: #475569; }
-
-button + button {
-	margin-top: 1rem;
+button.typ2:disabled {
+	background: #64748b;
+	color: #e2e8f0;
 }
 
 input {
@@ -75,7 +83,6 @@ input {
 	box-sizing: border-box;
 	transition: all 0.2s ease;
 	display: block;
-	margin: 0 auto 1rem auto;
 }
 input:focus {
 	border-color: #4f46e5;
