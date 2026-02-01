@@ -126,7 +126,8 @@ export function isWinningHand(h : Tile []){
 }
 
 function isSequence(tiles : [Tile, Tile, Tile]) : boolean{
-    const tiles_cp = tiles;
+    const tiles_cp = [... tiles] as [Tile, Tile, Tile];
+
     sortTiles(tiles_cp);
     if(tiles_cp[0].kind === "dragon" || tiles_cp[0].kind === "wind"
     || tiles_cp[1].kind === "dragon" || tiles_cp[1].kind === "wind"
@@ -134,7 +135,7 @@ function isSequence(tiles : [Tile, Tile, Tile]) : boolean{
     ){
         return false;
     }
-    if(!(tiles_cp[0].suit !== tiles_cp[1].suit && tiles_cp[0].suit === tiles_cp[2].suit)){
+    if(!(tiles_cp[0].suit === tiles_cp[1].suit && tiles_cp[0].suit === tiles_cp[2].suit)){
         return false;
     }
     if(tiles_cp[0].value + 1 === tiles_cp[1].value && tiles_cp[1].value + 1 === tiles_cp[2].value){
@@ -144,7 +145,6 @@ function isSequence(tiles : [Tile, Tile, Tile]) : boolean{
 }
 export function getAllSequences(hand : Tile[], discard : Tile | undefined, wind : Wind) : Chi[] {
     var output : Chi[]= [];
-
     for(let i = 0; i < hand.length; i++){
         for(let j = i+1; j < hand.length; j++){
             if(!hand[i] || !hand[j] || !discard){continue;}

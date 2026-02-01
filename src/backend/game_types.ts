@@ -10,7 +10,8 @@ export type PlayerDiscardResponse = {
 };
 export type PlayerSpecialResponse = {
     kind: "meld"
-    meld: Call
+    meld: Common.Meld
+    block : Common.Block
 };
 
 export function generate_all_tiles() : Tile[] {

@@ -44,16 +44,18 @@ export class Player {
         return tile_discarded;
     }
     public takeAction(tile : Tile | undefined) : Promise<PlayerDiscardResponse> {
+        this.action_resolver = undefined;
         return new Promise((resolve) => {
             this.action_resolver = resolve;
             this.socket?.emit("your choice", tile as Tile)
+            
         });
     };
     public async takeSpecialAction(options : MeldOption[]) : Promise<PlayerSpecialResponse> {
-        this.socket.emit("special_action_request", options);
+        this.special_action_resolver = undefined;
         return new Promise(resolve => {
-        // This assignment is the missing link!
-        this.special_action_resolver = resolve; 
+        this.special_action_resolver = resolve;
+        this.socket.emit("special_action_request", options);
     });
 };
     public resolveAction(tile : PlayerDiscardResponse) {
@@ -113,13 +115,16 @@ export class Player {
         }
 
         // CHI
-        const sequences = getAllSequences(this.hand, tile, wind);
-        if(sequences.length !== 0){
-            output.push({
-                meld : "chi",
-                blocks : sequences
-            });
+        const discarderId = ["east", "south", "west", "north"].indexOf(wind);
+        const isNextPlayer = this.id === (discarderId + 1) % 4;
+        console.log(discarderId, this.id);
+        if (isNextPlayer) {
+            const sequences = getAllSequences(this.hand, tile, this.wind);
+            if (sequences.length !== 0) {
+                output.push({ meld: "chi", blocks: sequences });
+            }
         }
+        
         
         // RON
         const hand_cp : Tile[] = JSON.parse(JSON.stringify(this.hand));
@@ -157,31 +162,42 @@ export class Player {
         }
     }
 
-    public toString() : string {
-        var output = "Player id: " + this.wind + "\nriver:";
-        var counter = 0;
-        for(let tile of this.river){
-            if(counter%6 === 0 && counter < 18){ output += "\n"; }
-            output += tile.toString() + "|";
-            counter++;
-        }
-        output += "\nhand:\n"
-        for(let tile of this.hand){
-            output += tile.toString() + "|";
-        }
-        output += "   blocks:[";
-        for(let block of this.open_blocks){
-            output += block.toString() + "][";
-        }
-        output += "]";
+    public call(stolenTile: Tile, response: PlayerSpecialResponse) {
+        const block = response.block;
+        if (!block) return;
 
-        return output;
+        let tilesFromHand: any[] = [];// TODO: change to factual type
+
+        if (block.kind === "pon" || block.kind === "kan") {
+            const countNeeded = block.kind === "pon" ? 2 : 3;
+            tilesFromHand = this.hand
+                .filter(t => sameTile(t, stolenTile, "ignoreRed"))
+                .slice(0, countNeeded);
+        } 
+        else if (block.kind === "chi") {
+            let skippedStolen = false;
+            tilesFromHand = block.tiles.filter(t => {
+                if (!skippedStolen && sameTile(t, stolenTile, "compareRed")) {
+                    skippedStolen = true;
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        tilesFromHand.forEach(target => {
+            const index = this.hand.findIndex(h => sameTile(h, target, "compareRed"));
+            if (index > -1) {
+                this.hand.splice(index, 1);
+            }
+        });
+
+        this.open_blocks.push(block);
     }
 
-    public call(tile : Tile, call : Exclude<Call, "skip">){
-        //TODO: implement later
-    }
 
+
+    
     public getIndex(tile : Tile) : number{
         var tile_from_hand = this.hand.find(x => sameTile(x, tile, "ignoreRed"));
         if(tile_from_hand === undefined){

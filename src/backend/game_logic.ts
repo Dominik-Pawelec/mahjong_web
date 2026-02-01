@@ -1,6 +1,6 @@
 import { NONAME } from "dns";
 import { Call, Tile } from "./game_types";
-import { sortTiles, Table, Wind } from "../common/mahjonh_types";
+import { Meld, sortTiles, Table, Wind } from "../common/mahjonh_types";
 import { generate_all_tiles } from "./game_types";
 import { Player } from "./player";
 import {PlayerSpecialResponse} from "./game_types"
@@ -23,120 +23,101 @@ export class Round {
         }
         
     }
-    public async handle_discard(player : Player, tile_discarded : Tile){
-        console.log("handling");
-        console.log(tile_discarded);
-        if(tile_discarded === undefined){return;}//TODO: implement better logic
-        
-        const actions: Promise<{id : number; action : PlayerSpecialResponse}>[] = [];
-        for(const player2 of this.players){
-            if(player2.wind === player.wind) {continue;}
 
-            const calls = player2.possibleCallsOn(tile_discarded, player.wind);
-            if(calls.length === 1) {continue;}
-            actions.push(
-                player2.takeSpecialAction(calls).then(action => ({
-                    id : player2.id,
-                    action : action
-                }))
-            );   
+    public async main_loop() {
+        let needsDraw = true;
+
+        while (this.wall.length > 14) {
+            const player = this.players[this.turn_id];
+            if (!player) break;
+
+            let drawnTile: Tile | undefined = undefined;
+            if (needsDraw) {
+                drawnTile = player.draw(this.wall);
+            }
+
+            await this.onStateChange(); 
+
+            console.log(`Waiting for Player ${this.turn_id}...`);
+            const action = await player.takeAction(drawnTile);
+            
+            const discarded = player.discard(action.tile);
+            this.recently_discarded_tile = discarded;
+            
+            await this.onStateChange();
+
+            const callResult = await this.check_for_calls(player, discarded);
+            this.recently_discarded_tile = undefined;
+
+            if (callResult) {
+                if (callResult.meldType === "ron") return;
+                this.turn_id = callResult.playerIndex;
+                needsDraw = (callResult.meldType === "kan");
+            } else {
+                this.turn_id = (this.turn_id + 1) % 4;
+                needsDraw = true;
+            }
+            
+            await this.onStateChange(); 
         }
+    }
+
+    private async check_for_calls(discarder: Player, tile: Tile) {
+        const actions: Promise<{id: number; action: PlayerSpecialResponse}>[] = [];
+
+        for (const p of this.players) {
+    if (p.id === discarder.id) continue;
+
+    const isNextPlayer = (this.turn_id + 1) % 4 === p.id;
+
+    let choices = p.possibleCallsOn(tile, discarder.wind);
+
+    if (!isNextPlayer) {
+        choices = choices.filter(choice => choice.meld !== "chi");
+    }
+
+    if (choices.length > 0) { // Changed from > 1 to > 0 to catch all valid calls
+        actions.push(
+            p.takeSpecialAction(choices).then(a => ({ id: p.id, action: a }))
+        );
+    }
+}
+
+        if (actions.length === 0) return null;
+        console.log(actions);
+        console.log(`Awaiting calls from players: ${actions.length}`);
         const results = await Promise.all(actions);
+        console.log("All players responded");
+        const priorityMap: Record<string, number> = { "ron": 3, "kan": 2, "pon": 2, "chi": 1, "skip": 0 };
 
-        var players_actions : Call [] = ["skip","skip","skip","skip"];
-        for (const result of results) {
-            players_actions[result.id] = result.action.meld;
+        let best = results[0] as {id : number, action: PlayerSpecialResponse};
+        for (const current of results) {
+            const currentPriority = priorityMap[current.action.meld] ?? 0;
+            const bestPriority = priorityMap[best.action.meld] ?? 0;
+
+            if (currentPriority > bestPriority) {
+                best = current;
+            }
         }
-        console.log(players_actions);
-        
-        if(players_actions.some(action => action.localeCompare("skip") !== 0)){
-            
-            var winners : Player [] = [];
-            for(let player2 of this.players){
-                if(players_actions[player2.id]?.localeCompare("ron") === 0){
-                    winners.push(player2);
-                }
-            }
-            if(winners.length !== 0){ //TODO: proper handling of win
-                console.log("WYGRANA");
-            }
-            
-            var pon = players_actions.findIndex(x => x.localeCompare("pon") === 0);
-            const pon_player = this.players[pon]; 
-            if(pon_player !== undefined){
-                console.log("PON");
-                this.turn_id = pon_player.id;
-                //handle pon
-                player.river.pop();
-                pon_player.call(tile_discarded, "pon");
-                this.onStateChange();
-                await this.turn(false);
-            }
-            var kan = players_actions.findIndex(x => x.localeCompare("kan") === 0);
-            const kan_player = this.players[kan]; 
-            if(kan_player !== undefined){
-                console.log("KAN");
-                this.turn_id = kan_player.id;
-                //handle kan
-                player.river.pop();
-                kan_player.call(tile_discarded, "kan");
-                this.onStateChange();
-                await this.turn(false);
-            }
-            var chi = players_actions.findIndex(x => x.localeCompare("chi") === 0);
-            const chi_player = this.players[chi]; 
-            if(chi_player !== undefined){
-                console.log("CHI");
-                this.turn_id = chi_player.id;
-                //handle chi
-            }
-            var tile_id = await player.takeAction(undefined);
-            var tile_discarded2 = player.discard(tile_id.tile);
-            this.recently_discarded_tile = tile_discarded2;
-            this.onStateChange();
-            this.recently_discarded_tile = undefined;
-            await this.handle_discard(player, tile_discarded2);
+
+        if (!best || best.action.meld === "skip") return null;
+
+        const caller = this.players[best.id];
+        if (!caller) {
+            console.error(`Player with ID ${best.id} not found.`);
+            return null;
         }
-    }
-    public async turn(draw : boolean){
-        const player = this.players[this.turn_id];
-        if(player != undefined){ 
-            var tile : Tile | undefined = undefined;
-            //sortTiles(player.hand);
-            if(draw){
-                tile = player.draw(this.wall);
-                this.onStateChange();
+
+        if (best.action.meld !== "ron") {
+            if (discarder.river.length > 0) {
+                discarder.river.pop();
             }
-            var tile_id = await player.takeAction(tile? tile : undefined);
-            var tile_discarded = player.discard(tile_id.tile);
-            this.recently_discarded_tile = tile_discarded;
-            this.onStateChange();
-            this.recently_discarded_tile = undefined;
-            var handle = await this.handle_discard(player, tile_discarded);
+            caller.call(tile, best.action);
         }
-    }
-    public visibleToString() : string{
-        var output = "";
-        for(let player of this.players){
-            
-            output += "Player" + player.id + ": " + player.socket.id + "\n";
-            output += "discard: \n" + player.river + "\n";
-            output += "open blocks: \n" + player.open_blocks;
-            output += "\n";
-        }
-        return output;
+
+        return { playerIndex: best.id, meldType: best.action.meld };
     }
 
-    public async main_loop(){
-        while(this.wall.length > 14){
-            await this.turn(true);
-            this.turn_id = (this.turn_id + 1) % 4;
-        }
-    }
-
-    public placeInLobby(){
-        return this.players.find(x => x.socket === undefined);
-    }
 
     private getTable() : Table {
         const thisRoundWind = this.players[this.turn_id]?.wind as Wind;
