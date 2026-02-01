@@ -145,7 +145,7 @@ export class Player {
             blocks : this.open_blocks,
             points : this.points,
             name : this.wind, // TODO: add valid name
-            riichiIdx : 0 // TODO: add riichi
+            riichiIdx : undefined, // TODO: add riichi
         }
     }
     public getPrivateData(recently_discarded_tile : Tile | undefined, from_wind : Wind) : PrivatePlayerData{

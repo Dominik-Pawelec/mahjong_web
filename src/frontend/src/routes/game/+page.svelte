@@ -3,7 +3,7 @@
 	import { onMount, setContext } from "svelte"
 	import HandHTML from './Hand.svelte'
 	import MeldsHTML from './Melds.svelte'
-	import { getPlayerWind, type Direction } from "./common"
+	import { getPlayerPosition, getPlayerWind, type Direction } from "./common"
 	import type { ServerData, PlayerResponse } from "@common/comms"
 	import { ServerURL } from "@common/comms"
 	import '../../app.css'
@@ -23,7 +23,7 @@
 	onMount(() => {
 		socket = io(ServerURL);
 		socket.on('server_packet', (data: ServerData) => {
-			gameData = data;
+			gameData = {...data};
 			console.log(data)
 		})
 
@@ -54,10 +54,12 @@
 					<div class="infoc tilesLeft"> x{gameData.table.tilesLeft} </div>
 				</div>
 				{#each directions as direction}
-					<div class="name {direction}">
+					<div class="name {direction}"
+						class:playerTurn={getPlayerPosition(gameData.playerTurn, gameData.playerWind) === direction}
+					>
 						<div>{windChar[getPlayerWind(gameData.playerWind, direction)]}</div>
-						<div>{gameData.table[getPlayerWind(gameData.playerWind, direction)].name}: </div>
-						<div>{gameData.table[getPlayerWind(gameData.playerWind, direction)].points}: </div>
+						<div> {gameData.table[getPlayerWind(gameData.playerWind, direction)].name}: </div>
+						<div>{gameData.table[getPlayerWind(gameData.playerWind, direction)].points}</div>
 					</div>
 				{/each}
 			</div>
@@ -205,5 +207,8 @@
 		font-size: 5vmin;
 		color: silver;
 		padding: 2vmin;
+	}
+	.playerTurn {
+		color: gold;
 	}
 </style>
