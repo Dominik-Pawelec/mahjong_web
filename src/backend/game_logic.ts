@@ -76,7 +76,7 @@ export class Round {
         choices = choices.filter(choice => choice.meld !== "chi");
     }
 
-    if (choices.length > 0) { // Changed from > 1 to > 0 to catch all valid calls
+    if (choices.length > 1) {
         actions.push(
             p.takeSpecialAction(choices).then(a => ({ id: p.id, action: a }))
         );
