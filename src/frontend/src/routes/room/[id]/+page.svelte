@@ -2,54 +2,94 @@
     import { onMount } from 'svelte';
 	import { goto } from '$app/navigation'
 	import { page } from '$app/stores';
-
-	const apiEndpoint = "chuj w dupie hlupie"
-	let playerCount = 0
+	import { socket } from "$lib/socket";
+	import type { GameRoom } from "@common/comms";
 
 	$: roomId = $page.params.id;
 
-	const dots_steps = ['.', '..', '...'];
+	let playerCount = 0;
+	let roomName = 'Game Lobby';
+
+	const dots_steps = ['', '.', '..', '...'];
 	let dots = '';
 
-	async function fetchPlayerCount() {
-		try {
-			const response = await fetch(apiEndpoint);
-			if(!response.ok) throw new Error('Network response was not ok!');
-			const data = await response.json();
-			playerCount = data.count
-			if(playerCount === 4) goto("/game")
-		} catch (err) {
-			console.error('(Lobby) Failed to fetch player count:', err)
-		}
-	}
+	const leaveRoom = () => {
+		socket.emit("quit_room", { roomId });
+	};
 
 	onMount(() => {
-		//TODO: Announce to the server that someone joined the lobby
-		fetchPlayerCount()
-		const fetchIntervalID = setInterval(fetchPlayerCount, 2500)
+		const init = async () => {
+			if (!socket.connected) {
+				await new Promise<void>(resolve => {
+					socket.once("connect", () => resolve());
+				});
+			}
+
+			socket.emit("join_room", { roomId });
+		};
+		init();
+
+		socket.on("room_state", ({ id, name, clients } : GameRoom) => {
+			playerCount = clients.length;
+			roomName = name;
+		});
+
 		let dots_index = 0;
 		const dotsIntervalID = setInterval(() => {
 			dots = dots_steps[dots_index++];
 			dots_index = dots_index % dots_steps.length;
-		}, 1000);
+		}, 500);
 
+		window.addEventListener("beforeunload", leaveRoom);
 		return () => {
-			clearInterval(fetchIntervalID)
 			clearInterval(dotsIntervalID)
-			//TODO: Announce to the server that someone has left the lobby
+			socket.off("room_state");
+			leaveRoom();
+			window.removeEventListener("beforeunload", leaveRoom);
 		}
 	})
 </script>
 
 <div class="card">
 	<h1>
-		Waiting for players ({playerCount}/4){dots}
+		{roomName}
 	</h1>
+
+	<h3 class="waiting">
+		<span class="text-wrapper">
+			Waiting for players ({playerCount}/4)
+			<span class="dots">{dots}</span>
+		</span>
+	</h3>
+
+	<br>
+
 	<p class="hint">
 		The game will start automatically when all players join.
 	</p>
+
 	<br>
+
 	<button on:click={() => {goto('/')}}>
 		Leave
 	</button>
 </div>
+
+<style>
+	.waiting {
+		text-align: center;
+		position: relative;
+	}
+
+	.text-wrapper {
+		display: inline-block;
+		position: relative;
+	}
+
+	.dots {
+		position: absolute;
+		left: 100%;
+		top: 0;
+		white-space: pre;
+	}
+</style>

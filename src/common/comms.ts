@@ -15,4 +15,15 @@ export type ServerData = {
 	playerWind: Wind;
 }
 
+export type Client = {
+	id: string;
+	name: string;
+};
+
+export type GameRoom = {
+	id: string;
+	name: string;
+	clients: Client[];
+};
+
 export const ServerURL = "http://localhost:6060";

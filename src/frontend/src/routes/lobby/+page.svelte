@@ -1,6 +1,28 @@
 <script lang="ts">
-    import { rooms } from '$lib/stores/rooms';
-	import { goto } from '$app/navigation'
+	import { onMount } from "svelte";
+	import { goto } from '$app/navigation';
+	import { socket } from "$lib/socket";
+	import { rooms } from "$lib/rooms";
+	import type { GameRoom } from "@common/comms";
+
+	function requestRoomList() {
+		socket.emit("request_room_list");
+	}
+
+	onMount(() => {
+		const handleRoomList = ({ rooms: newRooms }: { rooms: GameRoom[] }) => {
+			rooms.set(newRooms);
+		};
+
+		socket.on("send_room_list", handleRoomList);
+
+		requestRoomList();
+
+		return () => {
+			socket.off("send_room_list")
+		};
+	});
+
 </script>
 
 <main class="card">
@@ -11,11 +33,11 @@
 			<div class="room-card">
 				<div>
 					<h3 title={room.name}>{room.name}</h3>
-					<p>{room.players} / 4</p>
+					<p>{room.clients.length} / 4</p>
 				</div>
 
 				<button class="typ2"
-					disabled={room.players >= 4}
+					disabled={room.clients.length >= 4}
 					on:click={() => goto(`/room/${room.id}`)}
 				>
 					Join
@@ -24,9 +46,15 @@
 		{/each}
 	</div>
 
-	<button class="typ2" on:click={() => goto('/')}>
-		Return
-	</button>
+	<div class="actions">
+		<button class="typ2" on:click={requestRoomList}>
+			Refresh
+		</button>
+
+		<button class="typ2" on:click={() => goto('/')}>
+			Return
+		</button>
+	</div>
 </main>
 
 <style>
@@ -72,7 +100,7 @@
 
 	.room-card p {
 		margin: 0;
-		color: #555;
+		color: #AAAAAA;
 		font-size: 0.9rem;
 	}
 
@@ -83,5 +111,12 @@
 
 	.card {
 		min-width: 30rem;
+	}
+
+	.actions {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
 	}
 </style>

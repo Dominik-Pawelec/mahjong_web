@@ -1,18 +1,26 @@
 <script lang="ts">
-	import { rooms } from '$lib/stores/rooms';
+	import { onMount } from "svelte";
 	import { goto } from '$app/navigation';
-
+	import { socket } from "$lib/socket";
+	
 	let name = '';
 
+	onMount(() => {
+		socket.on("room_created", ({ roomId }) => {
+			goto(`/room/${roomId}`);
+		});
+
+		return () => {
+			socket.off("room_created")
+		};
+	});
+
 	function createRoom() {
-		const id = crypto.randomUUID();
+		if (!name.trim()) return;
 
-		rooms.update(r => [
-			...r,
-			{ id, name, players: 1 }
-		]);
-
-		goto(`/room/${id}`);
+		socket.emit("create_room", {
+			name: name.trim()
+		});
 	}
 </script>
 
@@ -25,7 +33,7 @@
 			bind:value={name}
 		/>
 
-		<button class="typ2" disabled={!name} on:click={createRoom}>
+		<button class="typ2" disabled={!name.trim()} on:click={createRoom}>
 			Create
 		</button>
 
