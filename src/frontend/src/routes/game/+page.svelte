@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Tile, Block, Wind, Meld } from "@common/mahjonh_types"
-	import {onMount, setContext} from "svelte"
+	import { onMount, setContext } from "svelte"
 	import HandHTML from './Hand.svelte'
 	import MeldsHTML from './Melds.svelte'
 	import { getPlayerWind, type Direction } from "./common"
