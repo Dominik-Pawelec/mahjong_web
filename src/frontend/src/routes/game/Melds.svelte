@@ -17,13 +17,13 @@
 	$: {
 		if(selectedMeld) {
 			if(selectedMeld.meld === "tsumo") {
-				callback("skip", {} as Block)
+				callback("tsumo", {} as Block)
 			}
 			if(selectedMeld.meld === "ron") {
-				callback("skip", {} as Block)
+				callback("ron", {} as Block)
 			}
 			if(selectedMeld.meld === "riichi") {
-				callback("skip", {} as Block)
+				callback("riichi", {} as Block)
 			}
 			if(selectedMeld.meld === "skip") {
 				callback("skip", {} as Block)

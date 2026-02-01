@@ -23,7 +23,7 @@
 	onMount(() => {
 		socket = io(ServerURL);
 		socket.on('server_packet', (data: ServerData) => {
-			gameData = {...data};
+			gameData = structuredClone(data);
 			console.log(data)
 		})
 
