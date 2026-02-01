@@ -51,7 +51,7 @@ export type PublicPlayerData = {
 	blocks: Block[];
 	points: number;
 	name: string;
-	riichiIdx: number;
+	riichiIdx: number | undefined; // NOTE: if no riichi then udefined
 }
 
 export type Meld = "chi" | "pon" | "kan" | "ron" | "tsumo" | "riichi" | "skip";

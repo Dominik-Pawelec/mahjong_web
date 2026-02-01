@@ -16,17 +16,15 @@
 	let gameData: ServerData;
 	let socket: Socket;
 
-	$: {
-		if(gameData) {
-			setContext("playerWind", gameData.playerWind)
-
-		}
+	$: if(gameData) {
+		setContext("playerWind", gameData.playerWind)
 	}
 
 	onMount(() => {
 		socket = io(ServerURL);
 		socket.on('server_packet', (data: ServerData) => {
 			gameData = data;
+			console.log(data)
 		})
 
 		return () => {
@@ -52,7 +50,7 @@
 			</div>
 			<div class="meta">
 				<div class="info">
-					<div class="infoc wind"> {gameData.table.roundWind} </div>
+					<div class="infoc wind"> {windChar[gameData.table.roundWind]} </div>
 					<div class="infoc tilesLeft"> x{gameData.table.tilesLeft} </div>
 				</div>
 				{#each directions as direction}
@@ -70,7 +68,7 @@
 						blocks={gameData.table[getPlayerWind(gameData.playerWind, direction)].publicData.blocks}
 						discards={gameData.table[getPlayerWind(gameData.playerWind, direction)].publicData.discards}
 						riichiIdx={gameData.table[getPlayerWind(gameData.playerWind, direction)].publicData.riichiIdx}
-						callback={(direction === "bottom" && gameData.playerWind === gameData.playerTurn ? discardCallback : undefined)}
+						callback={(direction === "bottom" && gameData.playerWind === gameData.playerTurn) ? discardCallback : undefined}
 					/>
 				</div>
 			{/each}

@@ -4,12 +4,15 @@
 	import DiscardsHTML from './Primitives/Discards.svelte'
 	import RiichiHTML from './Primitives/Riichi.svelte'
 	import type {Tile, Block} from '@common/mahjonh_types'
+	import { sortTiles } from '@common/mahjonh_types';
 
 	export let hand: Tile[];
 	export let blocks: Block[];
 	export let discards: Tile[];
 	export let riichiIdx: number | undefined;
 	export let callback: ((tile: Tile) => void) | undefined = undefined;
+
+	$: sortedTiles = sortTiles(hand);
 </script>
 
 <main>
@@ -23,7 +26,7 @@
 			</div>
 			<div class="hand-row">
 				<div class="tiles">
-					{#each hand as t}
+					{#each sortedTiles as t}
 						<TileHTML rotated={false} tile={t} callback={callback}/>
 					{/each}
 				</div>

@@ -141,7 +141,7 @@ export class Round {
     private getTable() : Table {
         const thisRoundWind = this.players[this.turn_id]?.wind as Wind;
         return {
-            roundWind: thisRoundWind,
+            roundWind: "east", //FIX: To ma być wiatr rundy, a nie wiatr gracza którego runda to jest
             doraIndicators: [],
             tilesLeft :this.wall.length - 14,
             ...this.players.reduce(

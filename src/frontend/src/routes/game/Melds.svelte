@@ -41,7 +41,7 @@
 		<div class="melds-box">
 			{#each sortedMelds as meld}
 				<button on:click={() => {selectedMeld = meld}} style="--meldColor: {meldColors[meld.meld]}" class="button-meld">
-					<span class="text">{meld}</span>
+					<span class="text">{meld.meld}</span>
 				</button>
 			{/each}
 		</div>

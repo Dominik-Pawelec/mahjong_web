@@ -9,7 +9,7 @@
 
 	const baseWidth = 4.2
 	const baseHeight = baseWidth * 4 / 3
-	const colorScheme: ColorScheme = getContext("colorScheme")!;
+	const colorScheme: ColorScheme = getContext("colorScheme") ?? "light";
 	const colorSchemePathMap: Record<ColorScheme, string> = {
 		dark: "assets/riichi-mahjong-tiles/Black/",
 		light: "assets/riichi-mahjong-tiles/Regular/"
