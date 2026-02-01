@@ -1,7 +1,8 @@
 import {Call, Tile, PlayerDiscardResponse, PlayerSpecialResponse} from "./game_types";
 import { allCalls } from "./game_types";
-import { Block, PrivatePlayerData, PublicPlayerData, sameTile, Wind } from "../common/mahjonh_types";
+import { Block, MeldOption, PrivatePlayerData, PublicPlayerData, sameTile, Wind } from "../common/mahjonh_types";
 import { PlayerResponse } from "@common/comms";
+import { getAllSequences, isWinningHand } from "./hand_calculator";
 
 export class Player {
     hand : Tile[];
@@ -48,12 +49,13 @@ export class Player {
             this.socket?.emit("your choice", tile as Tile)
         });
     };
-    public takeSpecialAction(calls : Call []) : Promise<PlayerSpecialResponse> {
+    public async takeSpecialAction(options : MeldOption[]) : Promise<PlayerSpecialResponse> {
+        this.socket.emit("special_action_request", options);
         return new Promise(resolve => {
-            this.special_action_resolver = resolve;
-            this.socket?.emit("special action", { calls });
-        });
-    };
+        // This assignment is the missing link!
+        this.special_action_resolver = resolve; 
+    });
+};
     public resolveAction(tile : PlayerDiscardResponse) {
         if (!this.action_resolver) {
             console.warn("resolveAction called with no pending action", tile);
@@ -63,46 +65,72 @@ export class Player {
         this.action_resolver = undefined;
     }
 
-    public resolveSpecialAction(call: PlayerSpecialResponse) {
-        this.special_action_resolver?.(call);
+    public resolveSpecialAction(melds: PlayerSpecialResponse) {
+        if (!this.special_action_resolver) {
+            console.warn("resolveSpecialAction called with no pending action", melds);
+            return;
+        }
+        this.special_action_resolver(melds);
         this.special_action_resolver = undefined;
     }
 
-    public possibleCallsOn(tile : Tile, curr_id : number) : Call [] {
-        var output : Call [] = ["skip"];
-        /*CHI
-        if((curr_id + 1) % 4 === this.id){
-            try{
-                var m2 = new Tile(tile.nr - 2, tile.type);
-                var m1 = new Tile(tile.nr - 1, tile.type);
-                var p1 = new Tile(tile.nr + 1, tile.type);
-                var p2 = new Tile(tile.nr + 2, tile.type);
-                if(
-                    (this.hand.some(t => m2.compare(t)===0) && this.hand.some(t => m1.compare(t)===0) )||
-                    (this.hand.some(t => m1.compare(t)===0) && this.hand.some(t => p1.compare(t)===0) )||
-                    (this.hand.some(t => p1.compare(t)===0) && this.hand.some(t => p2.compare(t)===0) )
-                ){
-                    output.push("chi");  
-                }
-            } catch (Error){}
-        }*/
-        //PON and KAN
+    public possibleCallsOn(tile : Tile, wind : Wind) : MeldOption [] {
+        var output : MeldOption [] = [
+            {meld : "skip", blocks : []}
+        ];
+        
         var nr_of_t = this.hand.filter(x => sameTile(x, tile, "ignoreRed")).length;
+        // KAN
         if(nr_of_t >= 3){
-            output.push("kan");
-            output.push("pon");
+            output.push({
+                meld : "kan",
+                blocks : [{ //TODO: add kan "added"
+                    kind: "kan",
+                        tile: tile,
+                        type : "open",
+                        player: wind
+                }]
+            });
+            output.push({
+                meld : "pon", 
+                blocks : [{
+                    kind: "pon",
+                        tile: tile,
+                        player: wind
+                }]
+            });
         }
+        // PON
         else if(nr_of_t === 2){
-            output.push("pon");
+            output.push({
+                meld : "pon", 
+                blocks : [{
+                    kind: "pon",
+                        tile: tile,
+                        player: wind
+                }]
+            });
+        }
+
+        // CHI
+        const sequences = getAllSequences(this.hand, tile, wind);
+        if(sequences.length !== 0){
+            output.push({
+                meld : "chi",
+                blocks : sequences
+            });
         }
         
-        //WIN
-        var hand_copy = [... this.hand];
-        hand_copy.push(tile);
-        //if(isWinningHand(hand_copy)){
-        //    output.push("ron");
-        //}
-        
+        // RON
+        const hand_cp : Tile[] = JSON.parse(JSON.stringify(this.hand));
+        hand_cp.push(tile);
+        if(isWinningHand(hand_cp)){
+            output.push({
+                meld : "ron",
+                blocks : []
+            });
+        }
+
         return output;
     }
 
@@ -115,10 +143,17 @@ export class Player {
             riichiIdx : 0 // TODO: add riichi
         }
     }
-    public getPrivateData() : PrivatePlayerData{
+    public getPrivateData(recently_discarded_tile : Tile | undefined, from_wind : Wind) : PrivatePlayerData{
+        if(!recently_discarded_tile){
+            var meldOptions : MeldOption[] = [];
+        }
+        else{
+            var meldOptions = this.possibleCallsOn(recently_discarded_tile, from_wind);
+        }
+        //console.log(this.hand.length);
         return {
             hand : this.hand,
-            availableMelds : [] // TODO: ask Oskar what does it mean
+            availableMelds : meldOptions
         }
     }
 

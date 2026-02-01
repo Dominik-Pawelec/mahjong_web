@@ -1,5 +1,6 @@
 import { Tile } from "./game_types"
-import { sortTiles, sameTile } from "../common/mahjonh_types";
+import { sortTiles, sameTile, Chi, Wind } from "../common/mahjonh_types";
+import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 
 function getPairs(h : Tile[]) : Tile[]{
     const hand : Tile[] = JSON.parse(JSON.stringify(h));
@@ -103,7 +104,7 @@ function isWinningHandNoPairs(h : Tile[]){
     return isWinningHandNoPairs(hand)
 }
 
-function isWinningHand(h : Tile []){
+export function isWinningHand(h : Tile []){
     const pairs = getPairs(h);
     for(const pair of pairs){
         const allPairs = h.filter(x => sameTile(x, pair, "ignoreRed"))
@@ -122,4 +123,42 @@ function isWinningHand(h : Tile []){
         if(isWinningHandNoPairs(hand)){ return true; }
     }
     return false;
+}
+
+function isSequence(tiles : [Tile, Tile, Tile]) : boolean{
+    const tiles_cp = tiles;
+    sortTiles(tiles_cp);
+    if(tiles_cp[0].kind === "dragon" || tiles_cp[0].kind === "wind"
+    || tiles_cp[1].kind === "dragon" || tiles_cp[1].kind === "wind"
+    || tiles_cp[2].kind === "dragon" || tiles_cp[2].kind === "wind"
+    ){
+        return false;
+    }
+    if(!(tiles_cp[0].suit !== tiles_cp[1].suit && tiles_cp[0].suit === tiles_cp[2].suit)){
+        return false;
+    }
+    if(tiles_cp[0].value + 1 === tiles_cp[1].value && tiles_cp[1].value + 1 === tiles_cp[2].value){
+        return true;
+    }
+    return false;
+}
+export function getAllSequences(hand : Tile[], discard : Tile | undefined, wind : Wind) : Chi[] {
+    var output : Chi[]= [];
+
+    for(let i = 0; i < hand.length; i++){
+        for(let j = i+1; j < hand.length; j++){
+            if(!hand[i] || !hand[j] || !discard){continue;}
+            const potential_sequence = [hand[i], hand[j], discard] as [Tile, Tile, Tile];
+            if(isSequence(potential_sequence)){
+                output.push({
+                    kind : "chi",
+                    tiles : potential_sequence,
+                    stolenTile : discard,
+                    player : wind
+                });
+            }
+        }
+    }
+
+    return output;
 }

@@ -42,16 +42,19 @@ io.on("connection", (socket : any) => { //TODO: make proper typing, not any
         game = new Game([lobby[0],lobby[1],lobby[2],lobby[3]] as [Player, Player, Player, Player]);
         
     }
-    if (lobby.length >= 4) {
+    if (lobby.length > 4) {
         socket.disconnect(true);
         return;
     }
     
     socket.on("client_response", async (data : any) => {
         const player = lobby.find(p => p.socket.id === socket.id);
-        
-        player?.resolveAction(data);
-        
+        if(data.kind === "discard"){
+            player?.resolveAction(data);
+        }
+        if(data.kind === "meld"){
+            player?.resolveSpecialAction(data);
+        }
 
     });
     socket.on("specialChoice", async (data : any) => {

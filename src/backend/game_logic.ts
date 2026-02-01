@@ -5,10 +5,12 @@ import { generate_all_tiles } from "./game_types";
 import { Player } from "./player";
 import {PlayerSpecialResponse} from "./game_types"
 import { ServerData } from "@common/comms";
+import { forEachChild } from "typescript";
 
 export class Round {
     players : [Player, Player, Player, Player];
     wall : Tile[];
+    recently_discarded_tile : Tile | undefined;
     public constructor(public turn_id : number, players : [Player, Player, Player, Player]){ //TODO: make it take not-new players
         this.players = players;
         this.wall = generate_all_tiles().sort((x, y) => Math.random() - 0.5); //TODO: change to be factually random, this one is biased
@@ -19,6 +21,7 @@ export class Round {
             for(let i = 0; i < 13; i++)
                 player.draw(this.wall);
         }
+        
     }
     public async handle_discard(player : Player, tile_discarded : Tile){
         console.log("handling");
@@ -29,9 +32,8 @@ export class Round {
         for(const player2 of this.players){
             if(player2.wind === player.wind) {continue;}
 
-            const calls = player2.possibleCallsOn(tile_discarded, player.id);
+            const calls = player2.possibleCallsOn(tile_discarded, player.wind);
             if(calls.length === 1) {continue;}
-
             actions.push(
                 player2.takeSpecialAction(calls).then(action => ({
                     id : player2.id,
@@ -90,6 +92,9 @@ export class Round {
             }
             var tile_id = await player.takeAction(undefined);
             var tile_discarded2 = player.discard(tile_id.tile);
+            this.recently_discarded_tile = tile_discarded2;
+            this.onStateChange();
+            this.recently_discarded_tile = undefined;
             await this.handle_discard(player, tile_discarded2);
         }
     }
@@ -104,7 +109,9 @@ export class Round {
             }
             var tile_id = await player.takeAction(tile? tile : undefined);
             var tile_discarded = player.discard(tile_id.tile);
+            this.recently_discarded_tile = tile_discarded;
             this.onStateChange();
+            this.recently_discarded_tile = undefined;
             var handle = await this.handle_discard(player, tile_discarded);
         }
     }
@@ -132,15 +139,16 @@ export class Round {
     }
 
     private getTable() : Table {
+        const thisRoundWind = this.players[this.turn_id]?.wind as Wind;
         return {
-            roundWind: this.players[this.turn_id]?.wind as Wind,
+            roundWind: thisRoundWind,
             doraIndicators: [],
             tilesLeft :this.wall.length - 14,
             ...this.players.reduce(
             (acc, player) => {
                 acc[player.wind] = {
                     publicData : player.getPublicData(),
-                    privateData : player.getPrivateData(),
+                    privateData : player.getPrivateData(this.recently_discarded_tile, thisRoundWind),
                     name : player.name,
                     points : player.points
                 };
@@ -174,13 +182,12 @@ export class Game {
     players : [Player, Player, Player, Player];
     is_running : boolean;
     turn_id : number;
-    round : Round;
+    round : Round | undefined;
 
     public constructor(players : [Player, Player, Player, Player]){
         this.players = players//[new Player("east", s0), new Player("south", s1), new Player("west", s2), new Player("north", s3)];
         this.is_running = false;
         this.turn_id = 0;
-        this.round = new Round(this.turn_id, this.players);
         console.log("the game has sarted");
         this.run();
     }

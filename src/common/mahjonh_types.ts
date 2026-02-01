@@ -104,6 +104,7 @@ export function sortTiles(tl: Tile[]): Tile[] {
 }
 
 export function sameTile(t1: Tile, t2: Tile, redMode: "ignoreRed" | "compareRed"): boolean {
+	if(!t1 || !t2) {return false;}
 	if(t1.kind === "closed" && t2.kind === "closed") { return true; }
 	if(t1.kind === "wind" && t2.kind === "wind") {
 		return t1.value === t2.value;
