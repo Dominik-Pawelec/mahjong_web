@@ -13,8 +13,8 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors : {
-        origin : "http://localhost:6060",
-        methods : ["GET", "POST"]
+        origin : "http://localhost:5173",
+        //methods : ["GET", "POST"]
     }
 });
 
@@ -30,44 +30,35 @@ var game : Game | undefined = undefined;
 
 const winds : Wind[] = ["east", "south", "west", "north"];
 
-async function sendServerData(socket : any){//TODO: make proper typing, not any
-    const game_cp = game;
-    const wind_turn = game_cp?.players[game_cp.turn_id]?.wind
-    if(game_cp && wind_turn){
-        lobby.forEach(player => {
-            const serverData : ServerData = {
-                table : game_cp.getTable(),
-                playerTurn : wind_turn,
-                playerWind : player.wind
-            }
-            player.socket.emit("gameState", serverData);
-        });
-    }
-} 
-
 //socket.io logic
 io.on("connection", (socket : any) => { //TODO: make proper typing, not any
     console.log("User connected :" + socket.id);
 
-    const new_player = new Player(winds[lobby.length - 1] as Wind, socket);
+    const new_player = new Player(winds[lobby.length] as Wind, socket);
     lobby.push(new_player);
     console.log(lobby.length)
     
     if(lobby.length === 4){
-        game = new Game(lobby[0],lobby[1],lobby[2],lobby[3]);
+        game = new Game([lobby[0],lobby[1],lobby[2],lobby[3]] as [Player, Player, Player, Player]);
+        
+    }
+    if (lobby.length >= 4) {
+        socket.disconnect(true);
+        return;
     }
     
-    socket.on("choice", async (data : any) => {
+    socket.on("client_response", async (data : any) => {
         const player = lobby.find(p => p.socket.id === socket.id);
-        sendServerData(socket);
+        
         player?.resolveAction(data);
+        
 
     });
     socket.on("specialChoice", async (data : any) => {
         const player = lobby.find(p => p.socket.id === socket.id);
-        sendServerData(socket);
+        
         player?.resolveSpecialAction(data.call);
-        sendServerData(socket);
+        
     });
 
     socket.on("disconnect", () => {
@@ -75,5 +66,14 @@ io.on("connection", (socket : any) => { //TODO: make proper typing, not any
         const index = lobby.findIndex(p => p.socket.id === socket.id);
         if (index !== -1) lobby.splice(index, 1);
     });
+
+    socket.onAny((event : any, ...args : any) => {
+        console.log(
+            `[SOCKET EVENT] ${socket.id} -> ${event}`,
+            JSON.stringify(args)
+        );
+    });
+
+
 });
 

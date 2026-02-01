@@ -33,7 +33,7 @@ export class Player {
         return tile;
     }
     public discard(tile: Tile) : Tile {
-        var tile_discarded = this.hand.find(x => {sameTile(x, tile, "compareRed")});
+        var tile_discarded = this.hand.find(x => sameTile(x, tile, "compareRed"));
         if(tile_discarded == undefined){
             throw Error("improper discarded tile");
         }
@@ -45,7 +45,7 @@ export class Player {
     public takeAction(tile : Tile | undefined) : Promise<PlayerDiscardResponse> {
         return new Promise((resolve) => {
             this.action_resolver = resolve;
-            this.socket?.emit("your choice", tile?.toString())
+            this.socket?.emit("your choice", tile as Tile)
         });
     };
     public takeSpecialAction(calls : Call []) : Promise<PlayerSpecialResponse> {
@@ -55,7 +55,11 @@ export class Player {
         });
     };
     public resolveAction(tile : PlayerDiscardResponse) {
-        this.action_resolver?.(tile);
+        if (!this.action_resolver) {
+            console.warn("resolveAction called with no pending action", tile);
+            return;
+        }
+        this.action_resolver(tile);
         this.action_resolver = undefined;
     }
 

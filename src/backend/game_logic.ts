@@ -4,6 +4,7 @@ import { sortTiles, Table, Wind } from "../common/mahjonh_types";
 import { generate_all_tiles } from "./game_types";
 import { Player } from "./player";
 import {PlayerSpecialResponse} from "./game_types"
+import { ServerData } from "@common/comms";
 
 export class Round {
     players : [Player, Player, Player, Player];
@@ -66,7 +67,7 @@ export class Round {
                 //handle pon
                 player.river.pop();
                 pon_player.call(tile_discarded, "pon");
-                emitGameState(this, this.players);
+                this.onStateChange();
                 await this.turn(false);
             }
             var kan = players_actions.findIndex(x => x.localeCompare("kan") === 0);
@@ -77,7 +78,7 @@ export class Round {
                 //handle kan
                 player.river.pop();
                 kan_player.call(tile_discarded, "kan");
-                emitGameState(this, this.players);
+                this.onStateChange();
                 await this.turn(false);
             }
             var chi = players_actions.findIndex(x => x.localeCompare("chi") === 0);
@@ -99,11 +100,11 @@ export class Round {
             //sortTiles(player.hand);
             if(draw){
                 tile = player.draw(this.wall);
-                emitGameState(this, this.players);
+                this.onStateChange();
             }
             var tile_id = await player.takeAction(tile? tile : undefined);
             var tile_discarded = player.discard(tile_id.tile);
-            emitGameState(this, this.players);
+            this.onStateChange();
             var handle = await this.handle_discard(player, tile_discarded);
         }
     }
@@ -129,6 +130,44 @@ export class Round {
     public placeInLobby(){
         return this.players.find(x => x.socket === undefined);
     }
+
+    private getTable() : Table {
+        return {
+            roundWind: this.players[this.turn_id]?.wind as Wind,
+            doraIndicators: [],
+            tilesLeft :this.wall.length - 14,
+            ...this.players.reduce(
+            (acc, player) => {
+                acc[player.wind] = {
+                    publicData : player.getPublicData(),
+                    privateData : player.getPrivateData(),
+                    name : player.name,
+                    points : player.points
+                };
+                return acc
+            },{} as Table extends infer T 
+                ? T extends {[K in Wind] : infer V}
+                    ? {[K in Wind] : V}
+                    : never
+                : never
+            )
+        }
+    }
+
+    private async onStateChange(){
+    const wind_turn = this.players[this.turn_id]?.wind;
+    if(wind_turn){
+        this.players.forEach(player => {
+            const serverData : ServerData = {
+                table : this.getTable(),
+                playerTurn : wind_turn,
+                playerWind : player.wind
+            }
+            player.socket.emit("server_packet", serverData);
+        });
+    }
+
+    }
 }
 
 export class Game {
@@ -137,8 +176,8 @@ export class Game {
     turn_id : number;
     round : Round;
 
-    public constructor(s0 : any, s1 : any, s2 : any, s3 : any){
-        this.players = [new Player("east", s0), new Player("south", s1), new Player("west", s2), new Player("north", s3)];
+    public constructor(players : [Player, Player, Player, Player]){
+        this.players = players//[new Player("east", s0), new Player("south", s1), new Player("west", s2), new Player("north", s3)];
         this.is_running = false;
         this.turn_id = 0;
         this.round = new Round(this.turn_id, this.players);
@@ -146,6 +185,7 @@ export class Game {
         this.run();
     }
     private async run(){
+        this.is_running = true;
         while(this.is_running && this.turn_id < 4){
             this.round = new Round(this.turn_id, this.players);
             await this.round.main_loop();
@@ -166,29 +206,7 @@ export type Table = {
     }
 }
  */
-    public getTable() : Table {
-        return {
-            roundWind: this.players[this.turn_id]?.wind as Wind,
-            doraIndicators: [],
-            tilesLeft :this.round.wall.length - 14,
-            ...this.players.reduce(
-            (acc, player) => {
-                acc[player.wind] = {
-                    publicData : player.getPublicData(),
-                    privateData : player.getPrivateData(),
-                    name : player.name,
-                    points : player.points
-                };
-                return acc
-            },{} as Table extends infer T 
-                ? T extends {[K in Wind] : infer V}
-                    ? {[K in Wind] : V}
-                    : never
-                : never
-            )
-            
-        }
-    }
+    
 }
 
 /*
@@ -196,13 +214,3 @@ export type Table = {
     var game = new Round(0, [new Player(0,"0"), new Player(1,"1"), new Player(2,"2"), new Player(3,"3")]);
     await game.main_loop();
 })()*/
-
-function emitGameState(round : Round, lobby : Player[]){
-    const state = round.visibleToString();
-    lobby.forEach(player => {
-        player.socket.emit("gameState", {
-            state : state,
-            player_hand: player.toString()
-        })
-    });
-}
