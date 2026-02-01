@@ -66,25 +66,24 @@ export class Round {
         const actions: Promise<{id: number; action: PlayerSpecialResponse}>[] = [];
 
         for (const p of this.players) {
-    if (p.id === discarder.id) continue;
+            //if (p.id === discarder.id) continue;
 
-    const isNextPlayer = (this.turn_id + 1) % 4 === p.id;
+            const isNextPlayer = (this.turn_id + 1) % 4 === p.id;
 
-    let choices = p.possibleCallsOn(tile, discarder.wind);
+            const choices = p.possibleCallsOn(tile, discarder.wind);
 
-    if (!isNextPlayer) {
-        choices = choices.filter(choice => choice.meld !== "chi");
-    }
+            //if (!isNextPlayer) {
+            //    choices = choices.filter(choice => choice.meld !== "chi");
+            //}
 
-    if (choices.length > 1) {
-        actions.push(
-            p.takeSpecialAction(choices).then(a => ({ id: p.id, action: a }))
-        );
-    }
-}
+            if (choices.length > 1) {
+                actions.push(
+                    p.takeSpecialAction(choices).then(a => ({ id: p.id, action: a }))
+                );
+            }
+        }
 
-        if (actions.length === 0) return null;
-        console.log(actions);
+        if (actions.length > 1) return null;
         console.log(`Awaiting calls from players: ${actions.length}`);
         const results = await Promise.all(actions);
         console.log("All players responded");

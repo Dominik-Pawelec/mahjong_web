@@ -115,7 +115,7 @@ export class Player {
         }
 
         // CHI
-        const discarderId = ["east", "south", "west", "north"].indexOf(wind);
+        /*const discarderId = ["east", "south", "west", "north"].indexOf(wind);
         const isNextPlayer = this.id === (discarderId + 1) % 4;
         console.log(discarderId, this.id);
         if (isNextPlayer) {
@@ -123,7 +123,7 @@ export class Player {
             if (sequences.length !== 0) {
                 output.push({ meld: "chi", blocks: sequences });
             }
-        }
+        }*/
         
         
         // RON
@@ -135,7 +135,7 @@ export class Player {
                 blocks : []
             });
         }
-
+        console.log(output);
         return output;
     }
 
