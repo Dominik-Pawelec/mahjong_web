@@ -36,7 +36,11 @@ export class Round {
                 drawnTile = player.draw(this.wall);
             }
 
+
             await this.onStateChange(); 
+
+
+
 
             console.log(`Waiting for Player ${this.turn_id}...`);
             const action = await player.takeAction(drawnTile);
@@ -66,13 +70,13 @@ export class Round {
         const actions: Promise<{id: number; action: PlayerSpecialResponse}>[] = [];
 
         for (const p of this.players) {
-            //if (p.id === discarder.id) continue;
+            if (p.id === discarder.id) continue;
 
             const isNextPlayer = (this.turn_id + 1) % 4 === p.id;
 
             const choices = p.possibleCallsOn(tile, discarder.wind);
 
-            //if (!isNextPlayer) {
+            //if (!isNextPlayer)   {
             //    choices = choices.filter(choice => choice.meld !== "chi");
             //}
 

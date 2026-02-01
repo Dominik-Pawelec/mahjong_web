@@ -139,6 +139,39 @@ export class Player {
         return output;
     }
 
+    public possibleCallsAfterDraw() : MeldOption [] {
+        var output : MeldOption [] = [
+            {meld : "skip", blocks : []}
+        ];
+        
+        if(isWinningHand(this.hand)){
+            output.push({
+                meld : "tsumo",
+                blocks : []
+            })
+        };
+        
+        for(let i = 0; i < this.hand.length; i++){
+            const hand = [...this.hand];
+            const tile = hand[i];
+            if(!tile){
+                continue;
+            }
+            if(hand.filter(t => sameTile(t, tile, "ignoreRed")).length === 4){
+                output.push({
+                    meld : "kan",
+                    blocks : [{
+                        kind: "kan",
+                        tile: tile,
+                        type: "closed"
+                    }]
+                })
+            }
+        }
+
+        return output;
+    }
+
     public getPublicData() : PublicPlayerData{
         return {
             discards : this.river,
@@ -150,10 +183,10 @@ export class Player {
     }
     public getPrivateData(recently_discarded_tile : Tile | undefined, from_wind : Wind) : PrivatePlayerData{
         if(!recently_discarded_tile){
-            var meldOptions : MeldOption[] = [];
+            var meldOptions : MeldOption[] = this.possibleCallsAfterDraw(); // TODO: add check for being your turn
         }
         else{
-            var meldOptions = this.possibleCallsOn(recently_discarded_tile, from_wind);
+            var meldOptions : MeldOption[] = this.possibleCallsOn(recently_discarded_tile, from_wind);
         }
         //console.log(this.hand.length);
         return {
