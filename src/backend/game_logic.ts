@@ -37,29 +37,39 @@ export class Round {
                 drawnTile = player.draw(this.wall);
                 await this.onStateChange();
 
-                const afterDrawOptions = player.possibleCallsAfterDraw();
+                const afterDrawOptions = player.possibleCallsAfterDraw(player.wind);
                 if (afterDrawOptions.length > 1) {
                     const special = await player.takeSpecialAction(afterDrawOptions);
 
-                    if (special.meld === "tsumo") {
+                    if(special.meld === "tsumo") {
                         this.handleWin(player, {win:"tsumo"});
                         return;
                     }
 
-                    if (special.meld === "kan" && special.block) {
+                    if(special.meld === "kan" && special.block) {
                         player.call(drawnTile as Tile, special);
 
                         drawnTile = player.draw(this.wall);
                         needsDraw = false;
                         await this.onStateChange();
                     }
+
+                    if(special.meld === "riichi"){
+                        player.is_in_riichi = player.hand.length;
+
+                    }
                 }
             }
 
             console.log(`Waiting for Player ${this.turn_id}...`);
-            const action = await player.takeAction(drawnTile);
-            
-            const discarded = player.discard(action.tile);
+            var discarded;
+            if(player.is_in_riichi === undefined){
+                const action = await player.takeAction(drawnTile);
+                discarded = player.discard(action.tile);
+            }
+            else{
+                discarded = player.discard(drawnTile!); // Will not be able to discard outside of drawing when in riichi
+            }
             this.recently_discarded_tile = discarded;
             
             await this.onStateChange();
@@ -140,7 +150,7 @@ export class Round {
     }
 
 
-    private getTable() : Table {
+    private getTable(to_wind : Wind) : Table {
         const thisRoundWind = this.players[this.turn_id]?.wind as Wind;
         return {
             roundWind: "east",
@@ -150,7 +160,7 @@ export class Round {
             (acc, player) => {
                 acc[player.wind] = {
                     publicData : player.getPublicData(),
-                    privateData : player.getPrivateData(this.recently_discarded_tile, thisRoundWind),
+                    privateData : player.getPrivateData(this.recently_discarded_tile, thisRoundWind, to_wind),
                     name : player.name,
                     points : player.points
                 };
@@ -169,7 +179,7 @@ export class Round {
         if(wind_turn){
             this.players.forEach(player => {
                 const serverData : ServerData = {
-                    table : this.getTable(),
+                    table : this.getTable(player.wind),
                     playerTurn : wind_turn,
                     playerWind : player.wind
                 }
@@ -200,7 +210,6 @@ export class Round {
                 }
             }
         }
-        
         // TODO: changes of winds
     }
 }

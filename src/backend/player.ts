@@ -13,7 +13,7 @@ export class Player {
     public socket : any;
     public name : string;
     public id : number;
-    public is_in_riichi : boolean;
+    public is_in_riichi : number | undefined;
     public constructor(wind : Wind, socket : any){
         this.wind = wind;
         this.hand = [];
@@ -23,7 +23,7 @@ export class Player {
         this.socket = socket;
         this.name = wind;
         this.id = ["east", "south", "west", "north"].indexOf(wind);
-        this.is_in_riichi = false;
+        this.is_in_riichi = undefined;
     }
     private action_resolver : undefined | ((res : PlayerDiscardResponse) => void) ;// : Promise<PlayerDiscardResponse> | undefined;
     private special_action_resolver: undefined | ((res : PlayerSpecialResponse) => void) ;// : Promise<PlayerSpecialResponse> | undefined;
@@ -144,10 +144,14 @@ export class Player {
         return output;
     }
 
-    public possibleCallsAfterDraw() : MeldOption [] {
+    public possibleCallsAfterDraw(to_wind : Wind) : MeldOption [] {
         var output : MeldOption [] = [
             {meld : "skip", blocks : []}
         ];
+
+        if(to_wind !== this.wind){
+            return output;
+        }
         
         if(isWinningHand(this.hand)){
             output.push({
@@ -189,7 +193,6 @@ export class Player {
                 }
             }
         }
-        console.log(":3")
         if(isInTenpai(this.hand)){
             output.push({
                 meld: "riichi",
@@ -208,16 +211,28 @@ export class Player {
             riichiIdx : undefined, // TODO: add riichi
         }
     }
-    public getPrivateData(recently_discarded_tile : Tile | undefined, from_wind : Wind) : PrivatePlayerData{
+    public getPrivateData(recently_discarded_tile : Tile | undefined, from_wind : Wind, to_wind : Wind) : PrivatePlayerData{
+        var outHand;
+        if(to_wind !== this.wind){
+            outHand = Array(this.hand.length).fill({kind : "closed"});
+        }
+        else{
+            outHand = this.hand;
+        }
         if(!recently_discarded_tile){
-            var meldOptions : MeldOption[] = this.possibleCallsAfterDraw(); // TODO: add check for being your turn
+            if(this.wind === from_wind){
+                var meldOptions : MeldOption[] = this.possibleCallsAfterDraw(to_wind); // TODO: add check for being your turn
+            }
+            else{
+                var meldOptions : MeldOption[] = [];
+            }
         }
         else{
             var meldOptions : MeldOption[] = this.possibleCallsOn(recently_discarded_tile, from_wind);
         }
         //console.log(this.hand.length);
         return {
-            hand : this.hand,
+            hand : outHand,
             availableMelds : meldOptions
         }
     }
@@ -272,7 +287,7 @@ export class Player {
         this.open_blocks = [];
         this.river = [];
         this.id = ["east", "south", "west", "north"].indexOf(wind);
-        this.is_in_riichi = false;
+        this.is_in_riichi = undefined;
     }
 
 }
