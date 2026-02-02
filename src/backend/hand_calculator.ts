@@ -125,13 +125,13 @@ export function isWinningHand(h : Tile []){
 
 export function isInTenpai(h : Tile[]) : boolean{ // assuming 14 tiles on hand
     const allTiles : Tile[] = generate_all_tiles(1);
-    const hand = [...h]
 
-    // TODO: delete one tile
-
-    for(const tile of allTiles){
-        if(isWinningHand([...hand, tile])){
-            return true;
+    for(let i = 0; i < h.length; i++){
+        const hand = [...h.slice(0, i), ...h.slice(i + 1)];
+        for(const tile of allTiles){
+            if(isWinningHand([...hand, tile])){
+                return true;
+            }
         }
     }
     return false;
