@@ -12,7 +12,7 @@ export class Round {
     players : [Player, Player, Player, Player];
     wall : Tile[];
     recently_discarded_tile : Tile | undefined;
-    public constructor(public turn_id : number, players : [Player, Player, Player, Player]){ //TODO: make it take not-new players
+    public constructor(public turn_id : number, players : [Player, Player, Player, Player]){
         this.players = players;
         this.wall = generate_all_tiles(4).sort((x, y) => Math.random() - 0.5); //TODO: change to be factually random, this one is biased
         if(this.wall.length === 0){
@@ -75,6 +75,10 @@ export class Round {
                 discarded = player.discard(drawnTile!); // Will not be able to discard outside of drawing when in riichi
             }
             this.recently_discarded_tile = discarded;
+            if(player.calls_riichi){
+                player.is_in_riichi = player.river.length - 1;
+                player.calls_riichi = false;
+            }
                 
 
             await this.onStateChange();
@@ -248,5 +252,7 @@ export class Game {
             }
             this.turn_id++;
         }
+        console.log("the game has ended");
+        return; // TODO: close lobby after showing the score
     } 
 }

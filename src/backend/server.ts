@@ -7,6 +7,7 @@ import http from "http";
 import path from "path"
 import { Wind } from "@common/mahjonh_types";
 import { ServerData, GameRoom, Client } from "@common/comms";
+import { runTests } from "./hand_calculator";
 
 const app = express();
 const server = http.createServer(app);

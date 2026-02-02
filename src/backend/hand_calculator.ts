@@ -73,32 +73,35 @@ function getSequenceStartingWith(h : Tile[], t : Tile) : ([Tile, Tile, Tile] | u
     return undefined;
 }
 
-function isWinningHandNoPairs(h : Tile[]){
-    const hand : Tile[] = [...h];
-    if (hand[0] === undefined || hand.length === 0){return true}
+function isWinningHandNoPairs(h: Tile[]): boolean {
+    if (h.length === 0) return true;
 
-    const fstTile = hand[0];
+    const hand = sortTiles([...h]) as Tile[];
+    const fstTile = hand[0]!;
+
     const sameFstTile = hand.filter(tile => sameTile(tile, fstTile, "ignoreRed"));
-    if(sameFstTile.length >=3){
-        var counter = 3;
-        for(const tile of sameFstTile){
-            if(counter > 0){
-                var index = hand.indexOf(tile);
-                hand.splice(index, 1);
-            }
-            counter --;
+    if (sameFstTile.length >= 3) {
+        const nextHand = [...hand];
+        for (let i = 0; i < 3; i++) {
+            const index = nextHand.findIndex(t => sameTile(t, fstTile, "ignoreRed"));
+            nextHand.splice(index, 1);
         }
-        return isWinningHandNoPairs(hand)
+        if (isWinningHandNoPairs(nextHand)) return true;
     }
-    if(fstTile.kind === "wind" || fstTile.kind === "dragon"){ return false; }
 
-    const sequence = getSequenceStartingWith(hand, fstTile);
-    if(sequence === undefined){ return false; }
-    for(const tile of sequence){
-        var index = hand.indexOf(tile);
-        hand.splice(index, 1);
+    if (fstTile.kind === "suit") {
+        const sequence = getSequenceStartingWith(hand, fstTile);
+        if (sequence !== undefined) {
+            const nextHand = [...hand];
+            for (const sTile of sequence) {
+                const index = nextHand.findIndex(t => sameTile(t, sTile, "ignoreRed"));
+                nextHand.splice(index, 1);
+            }
+            if (isWinningHandNoPairs(nextHand)) return true;
+        }
     }
-    return isWinningHandNoPairs(hand)
+
+    return false;
 }
 
 export function isWinningHand(h : Tile []){
@@ -123,13 +126,15 @@ export function isWinningHand(h : Tile []){
     return false;
 }
 
-export function isInTenpai(h : Tile[]) : boolean{ // assuming 14 tiles on hand
+export function isInTenpai(h : Tile[]) : boolean{
     const allTiles : Tile[] = generate_all_tiles(1);
 
     for(let i = 0; i < h.length; i++){
         const hand = [...h.slice(0, i), ...h.slice(i + 1)];
         for(const tile of allTiles){
             if(isWinningHand([...hand, tile])){
+                console.log("Tenpai! Discard:", h[i], "Wait:", tile);
+
                 return true;
             }
         }
@@ -174,4 +179,80 @@ export function getAllSequences(hand : Tile[], discard : Tile | undefined, wind 
     }
 
     return output;
+}
+
+
+const testCases = [
+    { 
+        hand: "123m 456m 789m 11s 222s", 
+        expectedTenpai: true, 
+        description: "Simple 2-pair wait" 
+    },
+    { 
+        hand: "11123456789999m", 
+        expectedTenpai: true, 
+        description: "Nine Gates (9-way wait)" 
+    },
+    { 
+        hand: "124m 58s 123p EWSN CF", 
+        expectedTenpai: false, 
+        description: "Complete garbage hand" 
+    },
+    { 
+        hand: "11223344556677m", 
+        expectedTenpai: true, 
+        description: "My example" 
+    },
+    { 
+        hand: "446778m 13788p 348m", 
+        expectedTenpai: false, 
+        description: "Oskar example" 
+    }
+];
+
+export function runTests() {
+    testCases.forEach(({ hand, expectedTenpai, description }) => {
+        const tileArray = parseHand(hand);
+        const result = isInTenpai(tileArray);
+        if (result === expectedTenpai) {
+            console.log(`PASS: ${description}`);
+        } else {
+            console.error(`FAIL: ${description}. Expected ${expectedTenpai}, got ${result}`);
+        }
+    });
+}
+export function parseHand(input: string): Tile[] {
+    const hand: Tile[] = [];
+    const groupRegex = /([0-9]+)([mpsz])/gi;
+    let match;
+
+    while ((match = groupRegex.exec(input)) !== null) {
+        const values = match[1]!;
+        const suitLetter = match[2]!.toLowerCase();
+
+        for (const char of values) {
+            const val = parseInt(char);
+            
+            if (suitLetter === 'z') {
+                hand.push(parseHonor(val));
+            } else {
+                hand.push({
+                    kind: "suit",
+                    suit: suitLetter === 'm' ? "man" : suitLetter === 'p' ? "pin" : "sou",
+                    value: (val === 0 ? 5 : val) as any,
+                    isRed: val === 0
+                });
+            }
+        }
+    }
+    return hand;
+}
+function parseHonor(val: number): Tile {
+    if (val <= 4) {
+        const winds: ("east" | "south" | "west" | "north")[] = ["east", "south", "west", "north"];
+        return { kind: "wind", value: winds[val - 1] as any };
+    } else {
+        const dragons: ("white" | "green" | "red")[] = ["white", "green", "red"];
+        return { kind: "dragon", value: dragons[val - 5] as any };
+    }
 }

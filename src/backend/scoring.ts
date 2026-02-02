@@ -175,7 +175,7 @@ function calculateHan(hand : HandAsBlocks, playerWind : Wind, roundWind : Wind) 
 export function calculatePayout(hand: Tile[], blocks : Block[], playerWind : Wind, roundWind : Wind, win_by : "ron" | "tsumo"){
     let possibleHands = allPossibleBlocks(hand, playerWind);
 
-    let maxHan = 0;
+    let maxHan = 1;
 
     for (const closedHand of possibleHands) {
         const fullHand: HandAsBlocks = [
