@@ -147,15 +147,23 @@ export class Player {
         }
 
         // CHI
-        /*const discarderId = ["east", "south", "west", "north"].indexOf(wind);
+        const discarderId = ["east", "south", "west", "north"].indexOf(wind);
         const isNextPlayer = this.id === (discarderId + 1) % 4;
-        console.log(discarderId, this.id);
-        if (isNextPlayer) {
-            const sequences = getAllSequences(this.hand, tile, this.wind);
-            if (sequences.length !== 0) {
-                output.push({ meld: "chi", blocks: sequences });
+
+        if (isNextPlayer && tile.kind === "suit") {
+            const sequences = this.findChiSequences(tile);
+            if (sequences.length > 0) {
+                output.push({
+                    meld: "chi",
+                    blocks: sequences.map(seq => ({
+                        kind: "chi",
+                        tiles: seq as [Tile, Tile, Tile],
+                        stolenTile: tile,
+                        player: wind
+                    }))
+                });
             }
-        }*/
+        }
         
         
         // RON
@@ -173,6 +181,26 @@ export class Player {
         console.log(output);
         return output;
     }
+    private findChiSequences(stolen: Tile): Tile[][] {
+        if (stolen.kind !== "suit") return [];
+        const val = stolen.value;
+        const suit = stolen.suit;
+        const handSuits = this.hand.filter(t => t.kind === "suit" && t.suit === suit);
+
+        const res: Tile[][] = [];
+        const find = (v: number) => handSuits.find(t => t.value === v);
+        const patterns = [[-2, -1], [-1, 1], [1, 2]];
+
+        for (const [a, b]  of patterns) {
+            const tileA = find(val + a!);
+            const tileB = find(val + b!);
+            if (tileA && tileB) {
+                res.push(sortTiles([tileA, tileB, stolen]) as Tile[]);
+            }
+        }
+        return res;
+    }
+
 
     public possibleCallsAfterDraw(to_wind : Wind) : MeldOption [] {
         var output : MeldOption [] = [
@@ -238,7 +266,7 @@ export class Player {
             blocks : this.open_blocks,
             points : this.points,
             name : this.wind, // TODO: add valid name
-            riichiIdx : undefined, // TODO: add riichi
+            riichiIdx : this.is_in_riichi,
         }
     }
     public getPrivateData(recently_discarded_tile : Tile | undefined, from_wind : Wind, to_wind : Wind) : PrivatePlayerData{
@@ -318,6 +346,10 @@ export class Player {
         this.river = [];
         this.id = ["east", "south", "west", "north"].indexOf(wind);
         this.is_in_riichi = undefined;
+        this.recent_draw = undefined;
+        this.calls_riichi = false;
+        this.action_resolver = undefined;
+        this.special_action_resolver = undefined;
     }
 
 }

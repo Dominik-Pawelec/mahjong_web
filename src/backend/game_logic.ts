@@ -27,11 +27,11 @@ export class Round {
 
     public async main_loop() {
         let needsDraw = true;
-
+        console.log("aaa")
         while (this.wall.length > 14) {
             const player = this.players[this.turn_id];
             if (!player) break;
-
+            await this.onStateChange();
             let drawnTile: Tile | undefined = undefined;
             if(needsDraw) {
                 drawnTile = player.draw(this.wall);
@@ -44,6 +44,7 @@ export class Round {
 
                     if(special.meld === "tsumo") {
                         await this.handleWin(player, {win:"tsumo"});
+                        await this.onStateChange();
                         return;
                     }
 
@@ -82,6 +83,7 @@ export class Round {
                 if (callResult.meldType === "ron"){
                     const winner = this.players[callResult.playerIndex];
                     await this.handleWin(winner!, {win: "ron", wind : player.wind});
+                    await this.onStateChange();
                     return;
                 };
                 this.turn_id = callResult.playerIndex;
@@ -212,7 +214,7 @@ export class Round {
             }
         }
         await this.onStateChange();
-        // TODO: changes of winds
+        await new Promise(resolve => setTimeout(resolve, 2000));
     }
 }
 
@@ -238,31 +240,10 @@ export class Game {
             console.log("round ended");
             const list : Wind[] = ["east", "south", "west", "north"];
             for(let i = 0; i < 4; i++){
-                const nextWind = list[(list.indexOf(this.players[i]!.wind) + 1) % 4];
+                const nextWind = list[(list.indexOf(this.players[i]!.wind) +3) % 4];
                 this.players[i]!.reset(nextWind!);
             }
-            this.turn_id ++;
+            this.turn_id++;
         }
-    }
-/*
-export type Table = {
-    roundWind: Wind;
-    doraIndicators: Tile[];
-    tilesLeft: number;
-} & {
-    [P in Wind]: {
-        publicData: PublicPlayerData;
-        privateData: PrivatePlayerData;
-        name: string;
-        points: number;
-    }
+    } 
 }
- */
-    
-}
-
-/*
-(async () => {
-    var game = new Round(0, [new Player(0,"0"), new Player(1,"1"), new Player(2,"2"), new Player(3,"3")]);
-    await game.main_loop();
-})()*/
