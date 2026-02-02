@@ -14,7 +14,7 @@ export class Round {
     recently_discarded_tile : Tile | undefined;
     public constructor(public turn_id : number, players : [Player, Player, Player, Player]){ //TODO: make it take not-new players
         this.players = players;
-        this.wall = generate_all_tiles(4)//generate_all_tiles().sort((x, y) => Math.random() - 0.5); //TODO: change to be factually random, this one is biased
+        this.wall = generate_all_tiles(4).sort((x, y) => Math.random() - 0.5); //TODO: change to be factually random, this one is biased
         if(this.wall.length === 0){
             throw Error("Invalid wall");
         }
@@ -36,6 +36,7 @@ export class Round {
             if(needsDraw) {
                 drawnTile = player.draw(this.wall);
                 player.recent_draw = drawnTile;
+                
                 await this.onStateChange();
 
                 const afterDrawOptions = player.possibleCallsAfterDraw(player.wind);
@@ -60,6 +61,8 @@ export class Round {
                         player.calls_riichi = true;
                     }
                 }
+            } else {
+                player.recent_draw = undefined; 
             }
 
             console.log(`Waiting for Player ${this.turn_id}...`);

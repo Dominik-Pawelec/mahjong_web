@@ -50,7 +50,7 @@ function getSequenceStartingWith(h : Tile[], t : Tile) : ([Tile, Tile, Tile] | u
         nextNextTile = {
             kind : "suit",
             suit : tile.suit,
-            value : 4,
+            value : 6,
         }
     }
     else{

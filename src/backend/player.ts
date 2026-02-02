@@ -87,15 +87,7 @@ export class Player {
     }
     public resolveAction(tile : PlayerDiscardResponse) {
         if (!this.action_resolver) return;
-        const legal = this.getLegalDiscards(this.recent_draw);
-        const chosen = legal.find(t => sameTile(t, tile.tile, "compareRed"));
-
-        if (!chosen) {
-            this.action_resolver({kind : "discard", tile :legal[0]!});
-        } else {
-            this.action_resolver(tile);
-        }
-
+        this.action_resolver(tile);
         this.action_resolver = undefined;
     }
 
