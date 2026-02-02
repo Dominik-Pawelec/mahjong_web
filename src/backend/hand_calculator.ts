@@ -2,7 +2,7 @@ import { Tile } from "./game_types"
 import { sortTiles, sameTile, Chi, Wind } from "../common/mahjonh_types";
 import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 
-function getPairs(h : Tile[]) : Tile[]{
+export function getPairs(h : Tile[]) : Tile[]{
     const hand : Tile[] = JSON.parse(JSON.stringify(h));
     sortTiles(hand);
     const output : Tile[] = [];

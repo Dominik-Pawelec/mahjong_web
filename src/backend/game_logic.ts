@@ -4,8 +4,9 @@ import { Meld, sortTiles, Table, Wind } from "../common/mahjonh_types";
 import { generate_all_tiles } from "./game_types";
 import { Player } from "./player";
 import {PlayerSpecialResponse} from "./game_types"
-import { ServerData } from "@common/comms";
+import { ServerData } from "../common/comms";
 import { forEachChild } from "typescript";
+import { calculatePayout } from "./scoring";
 
 export class Round {
     players : [Player, Player, Player, Player];
@@ -32,15 +33,28 @@ export class Round {
             if (!player) break;
 
             let drawnTile: Tile | undefined = undefined;
-            if (needsDraw) {
+            if(needsDraw) {
                 drawnTile = player.draw(this.wall);
+                await this.onStateChange();
+
+                const afterDrawOptions = player.possibleCallsAfterDraw();
+                if (afterDrawOptions.length > 1) {
+                    const special = await player.takeSpecialAction(afterDrawOptions);
+
+                    if (special.meld === "tsumo") {
+                        this.handleWin(player, {win:"tsumo"});
+                        return;
+                    }
+
+                    if (special.meld === "kan" && special.block) {
+                        player.call(drawnTile as Tile, special);
+
+                        drawnTile = player.draw(this.wall);
+                        needsDraw = false;
+                        await this.onStateChange();
+                    }
+                }
             }
-
-
-            await this.onStateChange(); 
-
-
-
 
             console.log(`Waiting for Player ${this.turn_id}...`);
             const action = await player.takeAction(drawnTile);
@@ -54,7 +68,11 @@ export class Round {
             this.recently_discarded_tile = undefined;
 
             if (callResult) {
-                if (callResult.meldType === "ron") return;
+                if (callResult.meldType === "ron"){
+                    const winner = this.players[callResult.playerIndex];
+                    this.handleWin(winner!, {win: "ron", wind : player.wind});
+                    return;
+                };
                 this.turn_id = callResult.playerIndex;
                 needsDraw = (callResult.meldType === "kan");
             } else {
@@ -125,7 +143,7 @@ export class Round {
     private getTable() : Table {
         const thisRoundWind = this.players[this.turn_id]?.wind as Wind;
         return {
-            roundWind: "east", //FIX: To ma być wiatr rundy, a nie wiatr gracza którego runda to jest
+            roundWind: "east",
             doraIndicators: [],
             tilesLeft :this.wall.length - 14,
             ...this.players.reduce(
@@ -147,18 +165,43 @@ export class Round {
     }
 
     private async onStateChange(){
-    const wind_turn = this.players[this.turn_id]?.wind;
-    if(wind_turn){
-        this.players.forEach(player => {
-            const serverData : ServerData = {
-                table : this.getTable(),
-                playerTurn : wind_turn,
-                playerWind : player.wind
-            }
-            player.socket.emit("server_packet", serverData);
-        });
+        const wind_turn = this.players[this.turn_id]?.wind;
+        if(wind_turn){
+            this.players.forEach(player => {
+                const serverData : ServerData = {
+                    table : this.getTable(),
+                    playerTurn : wind_turn,
+                    playerWind : player.wind
+                }
+                player.socket.emit("server_packet", serverData);
+            });
+        }
     }
 
+    private handleWin(player : Player, win_by : {win: "tsumo"} | {win: "ron", wind : Wind}){
+        console.log(`${player.wind} wins by ${win_by}`);
+
+        const payout = calculatePayout(player.hand, player.open_blocks, player.wind, "east", win_by.win);
+
+        // point calculation
+        if(win_by.win === "tsumo"){
+            for (const player2 of this.players){
+                if(player.wind !== player2.wind){
+                    player.points += payout;
+                    player2.points -= payout;
+                }
+            }
+        }
+        else{
+            for (const player2 of this.players){
+                if(player2.wind === win_by.wind){
+                    player.points += payout;
+                    player2.points -= payout;
+                }
+            }
+        }
+        
+        // TODO: changes of winds
     }
 }
 

@@ -1,7 +1,7 @@
 import {Call, Tile, PlayerDiscardResponse, PlayerSpecialResponse} from "./game_types";
 import { allCalls } from "./game_types";
 import { Block, MeldOption, PrivatePlayerData, PublicPlayerData, sameTile, Wind } from "../common/mahjonh_types";
-import { PlayerResponse } from "@common/comms";
+import { PlayerResponse } from "../common/comms";
 import { getAllSequences, isWinningHand } from "./hand_calculator";
 
 export class Player {
@@ -9,7 +9,7 @@ export class Player {
     open_blocks : Block[];
     public river : Tile[];
     public points : number;
-    public wind: Wind; //TODO: wind
+    public wind: Wind;
     public socket : any;
     public name : string;
     public id : number;
@@ -168,7 +168,22 @@ export class Player {
                 })
             }
         }
-
+        for (const block of this.open_blocks) {
+            if (block.kind === "pon") {
+                const tile = block.tile;
+                if (this.hand.some(t => sameTile(t, tile, "ignoreRed"))) {
+                    output.push({
+                        meld: "kan",
+                        blocks: [{
+                            kind: "kan",
+                            tile : tile,
+                            type: "added",
+                            player : block.player
+                        }]
+                    });
+                }
+            }
+        }
         return output;
     }
 
@@ -201,12 +216,12 @@ export class Player {
 
         let tilesFromHand: any[] = [];// TODO: change to factual type
 
-        if (block.kind === "pon" || block.kind === "kan") {
+        if (block.kind === "pon" || (block.kind === "kan" && block.type === "open")) {
             const countNeeded = block.kind === "pon" ? 2 : 3;
             tilesFromHand = this.hand
                 .filter(t => sameTile(t, stolenTile, "ignoreRed"))
                 .slice(0, countNeeded);
-        } 
+        }
         else if (block.kind === "chi") {
             let skippedStolen = false;
             tilesFromHand = block.tiles.filter(t => {
@@ -216,6 +231,17 @@ export class Player {
                 }
                 return true;
             });
+        }
+        else if (block.kind === "kan" && block.type === "added") {
+            const index = this.hand.findIndex(t => sameTile(t, block.tile, "ignoreRed"));
+            if (index > -1) this.hand.splice(index, 1);
+
+            const ponIndex = this.open_blocks.findIndex(
+                b => b.kind === "pon" && sameTile(b.tile, block.tile, "ignoreRed")
+            );
+            if (ponIndex > -1) {
+                this.open_blocks[ponIndex] = block;
+            }
         }
 
         tilesFromHand.forEach(target => {
