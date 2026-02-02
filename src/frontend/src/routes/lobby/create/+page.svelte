@@ -1,11 +1,17 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { goto } from '$app/navigation';
-	import { socket } from "$lib/socket";
+	import type { Socket } from "socket.io-client";
+	import { getSocket } from "$lib/socket";
+
+	let socket: Socket;
 	
 	let name = '';
+	let created = false;
 
 	onMount(() => {
+		socket = getSocket();
+
 		socket.on("room_created", ({ roomId }) => {
 			goto(`/room/${roomId}`);
 		});
@@ -16,7 +22,8 @@
 	});
 
 	function createRoom() {
-		if (!name.trim()) return;
+		if(created || !name.trim()) return;
+		created = true;
 
 		socket.emit("create_room", {
 			name: name.trim()

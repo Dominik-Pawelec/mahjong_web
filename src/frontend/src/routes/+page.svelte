@@ -1,5 +1,12 @@
 <script lang="ts">
 	import {goto} from '$app/navigation';
+	import { onMount } from "svelte";
+	import type { Socket } from "socket.io-client";
+	import { getSocket } from "$lib/socket";
+
+	onMount(() => {
+		getSocket();
+	});
 </script>
 
 <div class="card">

@@ -1,8 +1,16 @@
 import io from "socket.io-client";
-import { ServerURL } from "@common/comms";
 import type { Socket } from "socket.io-client";
+import { ServerURL } from "@common/comms";
 
-export const socket: Socket = io(ServerURL, {
-	autoConnect: true,
-	transports: ['polling']
-});
+let socket: Socket | null = null;
+
+export function getSocket(): Socket {
+	if (!socket) {
+		socket = io(ServerURL, {
+			autoConnect: true,
+			transports: ["websocket"],
+			withCredentials: true
+		});
+	}
+	return socket;
+}

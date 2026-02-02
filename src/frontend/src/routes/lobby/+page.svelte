@@ -1,16 +1,21 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { goto } from '$app/navigation';
-	import { socket } from "$lib/socket";
+	import type { Socket } from "socket.io-client";
+	import { getSocket } from "$lib/socket";
 	import { rooms } from "$lib/rooms";
-	import type { GameRoom } from "@common/comms";
+	import type { RoomData } from "@common/comms";
+
+	let socket: Socket;
 
 	function requestRoomList() {
 		socket.emit("request_room_list");
 	}
 
 	onMount(() => {
-		const handleRoomList = ({ rooms: newRooms }: { rooms: GameRoom[] }) => {
+		socket = getSocket();
+
+		const handleRoomList = ({ rooms: newRooms }: { rooms: RoomData[] }) => {
 			rooms.set(newRooms);
 		};
 
@@ -33,11 +38,11 @@
 			<div class="room-card">
 				<div>
 					<h3 title={room.name}>{room.name}</h3>
-					<p>{room.clients.length} / 4</p>
+					<p>{room.players} / 4</p>
 				</div>
 
 				<button class="typ2"
-					disabled={room.clients.length >= 4}
+					disabled={room.players>= 4}
 					on:click={() => goto(`/room/${room.id}`)}
 				>
 					Join

@@ -15,15 +15,14 @@ export type ServerData = {
 	playerWind: Wind;
 }
 
-export type Client = {
+export type RoomData = {
 	id: string;
 	name: string;
-};
+	players: number;
+}
 
-export type GameRoom = {
-	id: string;
+export type UserData = {
 	name: string;
-	clients: Client[];
-};
+}
 
 export const ServerURL = "http://localhost:6060";

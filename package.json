@@ -23,6 +23,7 @@
   "homepage": "https://github.com/Dominik-Pawelec/mahjong_web#readme",
   "dependencies": {
     "all": "^0.0.0",
+    "cookie-parser": "^1.4.7",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
     "socket.io": "^4.8.3",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.3",
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.10",
     "ts-node": "^10.9.2",

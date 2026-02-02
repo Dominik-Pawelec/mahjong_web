@@ -1,20 +1,26 @@
 <script lang="ts">
 	import '../app.css';
 	import { goto } from '$app/navigation';
-	import { user, type User } from '$lib/user';
+	import { user, DEFAULT_NAME } from '$lib/user';
+
+	export let data: {
+		userId?: string;
+		username?: string;
+	};
+
+	user.set({
+		name: data.username ?? DEFAULT_NAME
+	});
 </script>
 
 <div class="app">
 	<header>
 		<h2 on:click={() => goto('/')}>🀄 Mahjong Web</h2>
 		<nav>
+			<h3>Let's play { $user.name }!</h3>
 			<button on:click={() => goto('/lobby')}>Play</button>
-			{#if $user}
-				<img src={$user.avatarUrl} alt="avatar" class="avatar" on:click={() => goto('/profile')}/>
-			{:else}
-				<button on:click={() => goto('/login')}>Log in</button>
-				<button on:click={() => goto('/register')}>Sign up</button>
-			{/if}
+			<button on:click={() => goto('/lobby/create')}>Create</button>
+			<button on:click={() => goto('/profile')}>Profile</button>
 		</nav>
 	</header>
 

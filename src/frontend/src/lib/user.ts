@@ -1,8 +1,8 @@
 import { writable } from 'svelte/store';
+import type { UserData } from "@common/comms";
 
-export type User = {
-    username: string;
-    avatarUrl?: string;
-};
+export const DEFAULT_NAME = "Mahjong Player"
 
-export const user = writable<User | null>(null);
+export const user = writable<UserData>({
+	name: DEFAULT_NAME,
+});

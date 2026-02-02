@@ -186,6 +186,7 @@ export class Round {
 
     private async onStateChange(){
         const wind_turn = this.players[this.turn_id]?.wind;
+		console.log(this.players);
         if(wind_turn){
             this.players.forEach(player => {
                 const serverData : ServerData = {

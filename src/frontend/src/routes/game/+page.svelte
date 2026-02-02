@@ -5,30 +5,30 @@
 	import MeldsHTML from './Melds.svelte'
 	import { getPlayerPosition, getPlayerWind, type Direction } from "./common"
 	import type { ServerData, PlayerResponse } from "@common/comms"
-	import { ServerURL } from "@common/comms"
-	import '../../app.css'
-	import io from	'socket.io-client'
-    import type { Socket } from "socket.io-client";
+	import { getSocket } from "$lib/socket";
+
+	let socket = getSocket();
 
 	const windChar: Record<Wind, string> = {east: "東", south: "南", west: "西", north: "北"};
 	const directions: Direction[] = ["bottom", "top", "left", "right"];
 
 	let gameData: ServerData;
-	let socket: Socket;
 
 	$: if(gameData) {
 		setContext("playerWind", gameData.playerWind)
 	}
 
 	onMount(() => {
-		socket = io(ServerURL);
-		socket.on('server_packet', (data: ServerData) => {
+		socket.emit("game_join");
+
+		socket.on("server_packet", (data: ServerData) => {
 			gameData = structuredClone(data);
 			console.log(data)
 		})
 
 		return () => {
-			socket.disconnect();		
+			socket.off("server_packet");
+			socket.emit("game_quit")
 		}
 	})
 
@@ -58,7 +58,7 @@
 						class:playerTurn={getPlayerPosition(gameData.playerTurn, gameData.playerWind) === direction}
 					>
 						<div>{windChar[getPlayerWind(gameData.playerWind, direction)]}</div>
-						<div> {gameData.table[getPlayerWind(gameData.playerWind, direction)].name}: </div>
+						<div>{gameData.table[getPlayerWind(gameData.playerWind, direction)].name}: </div>
 						<div>{gameData.table[getPlayerWind(gameData.playerWind, direction)].points}</div>
 					</div>
 				{/each}
@@ -76,7 +76,7 @@
 			{/each}
 		</div>
 	{:else}
-		<div class="error">Game server is unresponsive :c</div>
+		<div class="error">Gra się rozjebawszy :c</div>
 	{/if}
 </main>
 

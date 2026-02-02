@@ -1,4 +1,4 @@
 import { writable } from "svelte/store";
-import type { GameRoom } from "@common/comms";
+import type { RoomData } from "@common/comms";
 
-export const rooms = writable<GameRoom[]>([]);
+export const rooms = writable<RoomData[]>([]);

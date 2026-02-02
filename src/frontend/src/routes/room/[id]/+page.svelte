@@ -1,9 +1,12 @@
 <script lang="ts">
     import { onMount } from 'svelte';
 	import { goto } from '$app/navigation'
+	import type { Socket } from "socket.io-client";
+	import { getSocket } from "$lib/socket";
 	import { page } from '$app/stores';
-	import { socket } from "$lib/socket";
-	import type { GameRoom } from "@common/comms";
+	import type { RoomData } from "@common/comms";
+
+	let socket: Socket;
 
 	$: roomId = $page.params.id;
 
@@ -18,20 +21,23 @@
 	};
 
 	onMount(() => {
-		const init = async () => {
+		socket = getSocket();
+		(async () => {
 			if (!socket.connected) {
 				await new Promise<void>(resolve => {
 					socket.once("connect", () => resolve());
 				});
 			}
-
 			socket.emit("join_room", { roomId });
-		};
-		init();
+		})();
 
-		socket.on("room_state", ({ id, name, clients } : GameRoom) => {
-			playerCount = clients.length;
-			roomName = name;
+		socket.on("room_state", (roomData : RoomData) => {
+			playerCount = roomData.players;
+			roomName = roomData.name;
+		});
+
+		socket.on("game_started", () => {
+			goto('/game')
 		});
 
 		let dots_index = 0;
@@ -44,6 +50,7 @@
 		return () => {
 			clearInterval(dotsIntervalID)
 			socket.off("room_state");
+			socket.off("game_started");
 			leaveRoom();
 			window.removeEventListener("beforeunload", leaveRoom);
 		}
