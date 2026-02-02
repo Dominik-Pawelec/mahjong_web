@@ -35,6 +35,7 @@ export class Round {
             let drawnTile: Tile | undefined = undefined;
             if(needsDraw) {
                 drawnTile = player.draw(this.wall);
+                player.recent_draw = drawnTile;
                 await this.onStateChange();
 
                 const afterDrawOptions = player.possibleCallsAfterDraw(player.wind);
@@ -42,7 +43,7 @@ export class Round {
                     const special = await player.takeSpecialAction(afterDrawOptions);
 
                     if(special.meld === "tsumo") {
-                        this.handleWin(player, {win:"tsumo"});
+                        await this.handleWin(player, {win:"tsumo"});
                         return;
                     }
 
@@ -55,8 +56,7 @@ export class Round {
                     }
 
                     if(special.meld === "riichi"){
-                        player.is_in_riichi = player.hand.length;
-
+                        player.calls_riichi = true;
                     }
                 }
             }
@@ -71,7 +71,8 @@ export class Round {
                 discarded = player.discard(drawnTile!); // Will not be able to discard outside of drawing when in riichi
             }
             this.recently_discarded_tile = discarded;
-            
+                
+
             await this.onStateChange();
 
             const callResult = await this.check_for_calls(player, discarded);
@@ -80,7 +81,7 @@ export class Round {
             if (callResult) {
                 if (callResult.meldType === "ron"){
                     const winner = this.players[callResult.playerIndex];
-                    this.handleWin(winner!, {win: "ron", wind : player.wind});
+                    await this.handleWin(winner!, {win: "ron", wind : player.wind});
                     return;
                 };
                 this.turn_id = callResult.playerIndex;
@@ -188,7 +189,7 @@ export class Round {
         }
     }
 
-    private handleWin(player : Player, win_by : {win: "tsumo"} | {win: "ron", wind : Wind}){
+    private async handleWin(player : Player, win_by : {win: "tsumo"} | {win: "ron", wind : Wind}){
         console.log(`${player.wind} wins by ${win_by}`);
 
         const payout = calculatePayout(player.hand, player.open_blocks, player.wind, "east", win_by.win);
@@ -210,6 +211,7 @@ export class Round {
                 }
             }
         }
+        await this.onStateChange();
         // TODO: changes of winds
     }
 }
@@ -230,11 +232,14 @@ export class Game {
     private async run(){
         this.is_running = true;
         while(this.is_running && this.turn_id < 4){
+            console.log("round started");
             this.round = new Round(this.turn_id, this.players);
             await this.round.main_loop();
-            const list : Wind[] =["east", "south", "west", "north"];
+            console.log("round ended");
+            const list : Wind[] = ["east", "south", "west", "north"];
             for(let i = 0; i < 4; i++){
-                this.players[i]?.reset(list[list.indexOf(this.players[i]?.wind as Wind) + 1]!);
+                const nextWind = list[(list.indexOf(this.players[i]!.wind) + 1) % 4];
+                this.players[i]!.reset(nextWind!);
             }
             this.turn_id ++;
         }

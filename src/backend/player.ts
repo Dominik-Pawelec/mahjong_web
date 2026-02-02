@@ -14,6 +14,8 @@ export class Player {
     public name : string;
     public id : number;
     public is_in_riichi : number | undefined;
+    public recent_draw : Tile | undefined;
+    public calls_riichi : boolean
     public constructor(wind : Wind, socket : any){
         this.wind = wind;
         this.hand = [];
@@ -24,6 +26,8 @@ export class Player {
         this.name = wind;
         this.id = ["east", "south", "west", "north"].indexOf(wind);
         this.is_in_riichi = undefined;
+        this.recent_draw = undefined;
+        this.calls_riichi = false;
     }
     private action_resolver : undefined | ((res : PlayerDiscardResponse) => void) ;// : Promise<PlayerDiscardResponse> | undefined;
     private special_action_resolver: undefined | ((res : PlayerSpecialResponse) => void) ;// : Promise<PlayerSpecialResponse> | undefined;
@@ -36,14 +40,13 @@ export class Player {
         return tile;
     }
     public discard(tile: Tile) : Tile {
-        var tile_discarded = this.hand.find(x => sameTile(x, tile, "compareRed"));
-        if(tile_discarded == undefined){
-            throw Error("improper discarded tile");
+        const index = this.hand.findIndex(x => sameTile(x, tile, "compareRed"));
+        if (index === -1) {
+            throw Error(`Error: Tile ${tile.value} not found in hand.`);
         }
-        var tile_id = this.hand.indexOf(tile_discarded);
-        this.hand.splice(tile_id, 1);
-        this.river.push(tile_discarded);
-        return tile_discarded;
+        const [removedTile] = this.hand.splice(index, 1);
+        this.river.push(removedTile!);
+        return removedTile!;
     }
     public takeAction(tile : Tile | undefined) : Promise<PlayerDiscardResponse> {
         this.action_resolver = undefined;
@@ -60,12 +63,39 @@ export class Player {
         this.socket.emit("special_action_request", options);
     });
 };
-    public resolveAction(tile : PlayerDiscardResponse) {
-        if (!this.action_resolver) {
-            console.warn("resolveAction called with no pending action", tile);
-            return;
+    public getLegalDiscards(drawnTile?: Tile): Tile[] {
+        if (this.calls_riichi) {
+            const legal: Tile[] = [];
+            for (let i = 0; i < this.hand.length; i++) {
+                const remainingHand = [
+                    ...this.hand.slice(0, i),
+                    ...this.hand.slice(i + 1),
+                ];
+
+                if (isInTenpai(remainingHand)) {
+                    legal.push(this.hand[i]!);
+                }
+            }
+            return legal;
         }
-        this.action_resolver(tile);
+        
+        if (this.is_in_riichi !== undefined) {
+            return drawnTile ? [drawnTile] : [];
+        }
+
+        return [...this.hand];
+    }
+    public resolveAction(tile : PlayerDiscardResponse) {
+        if (!this.action_resolver) return;
+        const legal = this.getLegalDiscards(this.recent_draw);
+        const chosen = legal.find(t => sameTile(t, tile.tile, "compareRed"));
+
+        if (!chosen) {
+            this.action_resolver({kind : "discard", tile :legal[0]!});
+        } else {
+            this.action_resolver(tile);
+        }
+
         this.action_resolver = undefined;
     }
 
