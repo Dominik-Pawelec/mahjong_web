@@ -6,6 +6,7 @@
 	import { getPlayerPosition, getPlayerWind, type Direction } from "./common"
 	import type { ServerData, PlayerResponse } from "@common/comms"
 	import { getSocket } from "$lib/socket";
+	import { showHeader } from '$lib/game';
 
 	let socket = getSocket();
 
@@ -19,6 +20,8 @@
 	}
 
 	onMount(() => {
+		showHeader.set(false);
+
 		socket.emit("game_join");
 
 		socket.on("server_packet", (data: ServerData) => {
@@ -27,6 +30,7 @@
 		})
 
 		return () => {
+			showHeader.set(true);
 			socket.off("server_packet");
 			socket.emit("game_quit")
 		}

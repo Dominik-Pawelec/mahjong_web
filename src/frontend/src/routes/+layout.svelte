@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { goto } from '$app/navigation';
 	import { user, DEFAULT_NAME } from '$lib/user';
+	import { showHeader } from '$lib/game';
 
 	export let data: {
 		userId?: string;
@@ -14,6 +15,7 @@
 </script>
 
 <div class="app">
+	{#if $showHeader}
 	<header>
 		<h2 on:click={() => goto('/')}>🀄 Mahjong Web</h2>
 		<nav>
@@ -23,6 +25,7 @@
 			<button on:click={() => goto('/profile')}>Profile</button>
 		</nav>
 	</header>
+	{/if}
 
 	<main>
 		<slot />
