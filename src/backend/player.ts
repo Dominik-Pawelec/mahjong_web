@@ -1,8 +1,8 @@
 import {Call, Tile, PlayerDiscardResponse, PlayerSpecialResponse} from "./game_types";
 import { allCalls } from "./game_types";
-import { Block, MeldOption, PrivatePlayerData, PublicPlayerData, sameTile, Wind } from "../common/mahjonh_types";
+import { Block, MeldOption, PrivatePlayerData, PublicPlayerData, sameTile, sortTiles, Wind } from "../common/mahjonh_types";
 import { PlayerResponse } from "../common/comms";
-import { getAllSequences, isWinningHand } from "./hand_calculator";
+import { getAllSequences, isInTenpai, isWinningHand } from "./hand_calculator";
 
 export class Player {
     hand : Tile[];
@@ -13,6 +13,7 @@ export class Player {
     public socket : any;
     public name : string;
     public id : number;
+    public is_in_riichi : boolean;
     public constructor(wind : Wind, socket : any){
         this.wind = wind;
         this.hand = [];
@@ -22,6 +23,7 @@ export class Player {
         this.socket = socket;
         this.name = wind;
         this.id = ["east", "south", "west", "north"].indexOf(wind);
+        this.is_in_riichi = false;
     }
     private action_resolver : undefined | ((res : PlayerDiscardResponse) => void) ;// : Promise<PlayerDiscardResponse> | undefined;
     private special_action_resolver: undefined | ((res : PlayerSpecialResponse) => void) ;// : Promise<PlayerSpecialResponse> | undefined;
@@ -127,14 +129,17 @@ export class Player {
         
         
         // RON
-        const hand_cp : Tile[] = JSON.parse(JSON.stringify(this.hand));
-        hand_cp.push(tile);
-        if(isWinningHand(hand_cp)){
+        var totalHand : Tile[] = [...this.hand];
+        totalHand.push(tile);
+        totalHand = sortTiles(totalHand) as Tile[];
+        console.log(totalHand);
+        if(isWinningHand(totalHand)){
             output.push({
                 meld : "ron",
                 blocks : []
             });
         }
+
         console.log(output);
         return output;
     }
@@ -183,6 +188,13 @@ export class Player {
                     });
                 }
             }
+        }
+        console.log(":3")
+        if(isInTenpai(this.hand)){
+            output.push({
+                meld: "riichi",
+                blocks : []
+            });
         }
         return output;
     }
@@ -254,14 +266,13 @@ export class Player {
         this.open_blocks.push(block);
     }
 
-
-
-    
-    public getIndex(tile : Tile) : number{
-        var tile_from_hand = this.hand.find(x => sameTile(x, tile, "ignoreRed"));
-        if(tile_from_hand === undefined){
-            return -1;
-        }
-        return this.hand.indexOf(tile_from_hand);
+    public reset(wind : Wind){
+        this.wind = wind;
+        this.hand = [];
+        this.open_blocks = [];
+        this.river = [];
+        this.id = ["east", "south", "west", "north"].indexOf(wind);
+        this.is_in_riichi = false;
     }
+
 }

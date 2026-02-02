@@ -1,20 +1,16 @@
-import { Tile } from "./game_types"
+import { generate_all_tiles, Tile } from "./game_types"
 import { sortTiles, sameTile, Chi, Wind } from "../common/mahjonh_types";
 import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 
 export function getPairs(h : Tile[]) : Tile[]{
-    const hand : Tile[] = JSON.parse(JSON.stringify(h));
-    sortTiles(hand);
+    var hand = sortTiles([...h]) as Tile[];
+
     const output : Tile[] = [];
-    for(let i = 0; i < hand.length; i++){
-        for(let k = i+1; k < hand.length; k++){
-            const t1 = hand[i];
-            const t2 = hand[k];
-            if(t1 === undefined || t2 === undefined){
-                continue;
-            }
-            if(sameTile(t1, t2, "ignoreRed")){
-                output.push(t1);
+
+    for(let i = 0; i < hand.length - 1; i++){
+        if (sameTile(hand[i]!, hand[i+1]!, "ignoreRed")) {
+            if (!output.some(p => sameTile(p, hand[i]!, "ignoreRed"))) {
+                output.push(hand[i]!);
             }
         }
     }
@@ -78,8 +74,9 @@ function getSequenceStartingWith(h : Tile[], t : Tile) : ([Tile, Tile, Tile] | u
 }
 
 function isWinningHandNoPairs(h : Tile[]){
-    const hand : Tile[] = JSON.parse(JSON.stringify(h));
-    if (hand[0] === undefined){return true;}
+    const hand : Tile[] = [...h];
+    if (hand[0] === undefined || hand.length === 0){return true}
+
     const fstTile = hand[0];
     const sameFstTile = hand.filter(tile => sameTile(tile, fstTile, "ignoreRed"));
     if(sameFstTile.length >=3){
@@ -111,7 +108,8 @@ export function isWinningHand(h : Tile []){
         if(allPairs.length < 2){
             continue; //something went wrong with function getPairs(h), should not happen
         }
-        const hand : Tile[] = JSON.parse(JSON.stringify(h));
+        var hand : Tile[] = [...h];
+        hand = sortTiles(hand) as Tile[];
         var counter = 2;
         for(const tile of allPairs){
             if(counter > 0){
@@ -125,10 +123,25 @@ export function isWinningHand(h : Tile []){
     return false;
 }
 
-function isSequence(tiles : [Tile, Tile, Tile]) : boolean{
-    const tiles_cp = [... tiles] as [Tile, Tile, Tile];
+export function isInTenpai(h : Tile[]) : boolean{ // assuming 14 tiles on hand
+    const allTiles : Tile[] = generate_all_tiles(1);
+    const hand = [...h]
 
-    sortTiles(tiles_cp);
+    // TODO: delete one tile
+
+    for(const tile of allTiles){
+        if(isWinningHand([...hand, tile])){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+function isSequence(tiles : [Tile, Tile, Tile]) : boolean{
+    var tiles_cp = [... tiles] as [Tile, Tile, Tile];
+
+    tiles_cp = sortTiles(tiles_cp) as [Tile, Tile, Tile];
     if(tiles_cp[0].kind === "dragon" || tiles_cp[0].kind === "wind"
     || tiles_cp[1].kind === "dragon" || tiles_cp[1].kind === "wind"
     || tiles_cp[2].kind === "dragon" || tiles_cp[2].kind === "wind"

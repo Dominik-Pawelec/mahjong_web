@@ -14,9 +14,9 @@ export type PlayerSpecialResponse = {
     block : Common.Block
 };
 
-export function generate_all_tiles() : Tile[] {
+export function generate_all_tiles(copies : number) : Tile[] {
     var output : Tile[] = [];
-    for(var i = 0; i < 4; i++){
+    for(var i = 0; i < copies; i++){
         output.push({
             kind : "dragon",
             value : "red"});

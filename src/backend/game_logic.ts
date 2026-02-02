@@ -14,7 +14,7 @@ export class Round {
     recently_discarded_tile : Tile | undefined;
     public constructor(public turn_id : number, players : [Player, Player, Player, Player]){ //TODO: make it take not-new players
         this.players = players;
-        this.wall = generate_all_tiles().sort((x, y) => Math.random() - 0.5); //TODO: change to be factually random, this one is biased
+        this.wall = generate_all_tiles(4)//generate_all_tiles().sort((x, y) => Math.random() - 0.5); //TODO: change to be factually random, this one is biased
         if(this.wall.length === 0){
             throw Error("Invalid wall");
         }
@@ -223,6 +223,10 @@ export class Game {
         while(this.is_running && this.turn_id < 4){
             this.round = new Round(this.turn_id, this.players);
             await this.round.main_loop();
+            const list : Wind[] =["east", "south", "west", "north"];
+            for(let i = 0; i < 4; i++){
+                this.players[i]?.reset(list[list.indexOf(this.players[i]?.wind as Wind) + 1]!);
+            }
             this.turn_id ++;
         }
     }
