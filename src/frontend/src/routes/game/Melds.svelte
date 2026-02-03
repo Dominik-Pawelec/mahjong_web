@@ -31,6 +31,7 @@
 			if(selectedMeld.blocks.length === 1) {
 				callback(selectedMeld.meld, selectedMeld.blocks[0])
 			}
+			selectedMeld = undefined;
 		}
 	}
 
@@ -48,7 +49,7 @@
 	{:else if selectedMeld  && selectedMeld.meld !== "skip" && selectedMeld.blocks.length > 1}
 		<div class="blocks-box">
 			{#each selectedMeld.blocks as block}
-				<button on:click={() => {callback(selectedMeld!.meld, block)}} class="button-block">
+				<button on:click={() => {selectedMeld = undefined; callback(selectedMeld!.meld, block)}} class="button-block">
 					<BlockHTML block={block} />
 				</button>
 			{/each}

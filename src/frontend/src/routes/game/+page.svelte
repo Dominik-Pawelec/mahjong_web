@@ -61,9 +61,12 @@
 					<div class="name {direction}"
 						class:playerTurn={getPlayerPosition(gameData.playerTurn, gameData.playerWind) === direction}
 					>
-						<div>{windChar[getPlayerWind(gameData.playerWind, direction)]}</div>
-						<div>{gameData.table[getPlayerWind(gameData.playerWind, direction)].name}: </div>
-						<div>{gameData.table[getPlayerWind(gameData.playerWind, direction)].points}</div>
+						<p>
+							{windChar[getPlayerWind(gameData.playerWind, direction)]} {gameData.table[getPlayerWind(gameData.playerWind, direction)].points}
+						</p>
+						<h3>
+							{gameData.table[getPlayerWind(gameData.playerWind, direction)].name}
+						</h3>
 					</div>
 				{/each}
 			</div>
@@ -150,8 +153,11 @@
 		height: fit-content;
 		font-family: yomogi;
 		font-size: 2.3vmin;
-		flex-direction: row;
+		flex-direction: column;
 		gap: .6vmin;
+	}
+	.name h3 {
+		font-size: 2vmin;
 	}
 	.name.bottom {
 		bottom: .5vmin;

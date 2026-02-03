@@ -1,12 +1,8 @@
-import { NONAME } from "dns";
-import { Call, Tile } from "./game_types";
-import { Meld, sortTiles, Table, Wind } from "../common/mahjonh_types";
-import { generate_all_tiles } from "./game_types";
+import { Tile, generate_all_tiles, PlayerSpecialResponse } from "./game_types";
 import { Player } from "./player";
-import {PlayerSpecialResponse} from "./game_types"
-import { ServerData } from "../common/comms";
-import { forEachChild } from "typescript";
 import { calculatePayout } from "./scoring";
+import { Table, Wind } from "@common/mahjonh_types";
+import { ServerData } from "@common/comms";
 
 export class Round {
     players : [Player, Player, Player, Player];
@@ -19,10 +15,10 @@ export class Round {
             throw Error("Invalid wall");
         }
         for(var player of this.players){
-            for(let i = 0; i < 13; i++)
-                player.draw(this.wall);
+            for(let i = 0; i < 13; i++){
+				player.draw(this.wall);
+			}
         }
-        
     }
 
     public async main_loop() {
@@ -171,7 +167,7 @@ export class Round {
                 acc[player.wind] = {
                     publicData : player.getPublicData(),
                     privateData : player.getPrivateData(this.recently_discarded_tile, thisRoundWind, to_wind),
-                    name : player.name,
+                    name : player.user.name,
                     points : player.points
                 };
                 return acc
@@ -186,7 +182,6 @@ export class Round {
 
     private async onStateChange(){
         const wind_turn = this.players[this.turn_id]?.wind;
-		console.log(this.players);
         if(wind_turn){
             this.players.forEach(player => {
                 const serverData : ServerData = {
@@ -194,7 +189,7 @@ export class Round {
                     playerTurn : wind_turn,
                     playerWind : player.wind
                 }
-                player.socket.emit("server_packet", serverData);
+                player.user.socket!.emit("server_packet", serverData);
             });
         }
     }
@@ -237,9 +232,9 @@ export class Game {
         this.is_running = false;
         this.turn_id = 0;
         console.log("the game has sarted");
-        this.run();
     }
-    private async run(){
+    public async run(){
+		if(this.is_running) return;
         this.is_running = true;
         while(this.is_running && this.turn_id < 4){
             console.log("round started");

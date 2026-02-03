@@ -1,29 +1,26 @@
-import {Call, Tile, PlayerDiscardResponse, PlayerSpecialResponse} from "./game_types";
-import { allCalls } from "./game_types";
+import { Tile, PlayerDiscardResponse, PlayerSpecialResponse} from "./game_types";
 import { Block, MeldOption, PrivatePlayerData, PublicPlayerData, sameTile, sortTiles, Wind } from "../common/mahjonh_types";
-import { PlayerResponse } from "../common/comms";
-import { getAllSequences, isInTenpai, isWinningHand } from "./hand_calculator";
+import { isInTenpai, isWinningHand } from "./hand_calculator";
+import { User } from "./user";
 
 export class Player {
     hand : Tile[];
     open_blocks : Block[];
+	public user : User;
     public river : Tile[];
     public points : number;
     public wind: Wind;
-    public socket : any;
-    public name : string;
     public id : number;
     public is_in_riichi : number | undefined;
     public recent_draw : Tile | undefined;
     public calls_riichi : boolean
-    public constructor(wind : Wind, socket : any){
+    public constructor(wind : Wind, user: User){
+		this.user = user;
         this.wind = wind;
         this.hand = [];
         this.open_blocks = [];
         this.river = [];
         this.points = 25000;
-        this.socket = socket;
-        this.name = wind;
         this.id = ["east", "south", "west", "north"].indexOf(wind);
         this.is_in_riichi = undefined;
         this.recent_draw = undefined;
@@ -52,17 +49,16 @@ export class Player {
         this.action_resolver = undefined;
         return new Promise((resolve) => {
             this.action_resolver = resolve;
-            this.socket?.emit("your choice", tile as Tile)
-            
+            this.user.socket?.emit("your choice", tile as Tile)
         });
     };
-    public async takeSpecialAction(options : MeldOption[]) : Promise<PlayerSpecialResponse> {
-        this.special_action_resolver = undefined;
-        return new Promise(resolve => {
-        this.special_action_resolver = resolve;
-        this.socket.emit("special_action_request", options);
-    });
-};
+	public async takeSpecialAction(options : MeldOption[]) : Promise<PlayerSpecialResponse> {
+		this.special_action_resolver = undefined;
+		return new Promise(resolve => {
+			this.special_action_resolver = resolve;
+			this.user.socket?.emit("special_action_request", options);
+		});
+	};
     public getLegalDiscards(drawnTile?: Tile): Tile[] {
         if (this.calls_riichi) {
             const legal: Tile[] = [];

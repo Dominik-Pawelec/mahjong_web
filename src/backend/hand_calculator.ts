@@ -1,6 +1,5 @@
 import { generate_all_tiles, Tile } from "./game_types"
 import { sortTiles, sameTile, Chi, Wind } from "../common/mahjonh_types";
-import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 
 export function getPairs(h : Tile[]) : Tile[]{
     var hand = sortTiles([...h]) as Tile[];
