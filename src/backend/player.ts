@@ -239,7 +239,7 @@ export class Player {
                 }
             }
         }
-        if(isInTenpai(this.hand)){
+        if(this.open_blocks.length === 0 && isInTenpai(this.hand)){
             output.push({
                 meld: "riichi",
                 blocks : []
