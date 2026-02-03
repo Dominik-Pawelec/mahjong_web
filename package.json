@@ -4,10 +4,10 @@
   "description": "Orzeł",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "install-all": "npm install && cd src/frontend && npm install && cd src/backend && npm install",
+    "build-all": "tsc && cd src/frontend && npm run build",
+    "install-all": "npm install && cd src/frontend && npm install",
     "backend": "ts-node src/backend/server.ts",
-    "frontend": "cd src/frontend && npm run dev"
+    "frontend": "cd src/frontend && npm run dev --"
   },
   "repository": {
     "type": "git",

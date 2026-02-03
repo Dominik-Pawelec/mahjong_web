@@ -11,7 +11,7 @@ npm run backend
 ```
 Build TypeScript:
 ```bash
-npm run build
+npm run build-all
 ```
 When cloning the first time don't forget to run
 ```bash

@@ -7,6 +7,7 @@ let socket: Socket | null = null;
 export function getSocket(): Socket {
 	if (!socket) {
 		socket = io(ServerURL, {
+			path: "/ws",
 			autoConnect: true,
 			transports: ["websocket"],
 			withCredentials: true

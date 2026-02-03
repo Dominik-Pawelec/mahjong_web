@@ -14,6 +14,10 @@
 	});
 </script>
 
+<svelte:head>
+  <link rel="icon" href="data:,">
+</svelte:head>
+
 <div class="app">
 	{#if $showHeader}
 	<header>

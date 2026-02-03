@@ -13,10 +13,13 @@ app.use(express.json());
 app.use(cookieParser());
 
 const server = http.createServer(app);
+const ServerURL = "https://mahjonh.frogrammer.pl"; // I cannot import it from comms.ts for some reason
 export const io = new Server(server, {
+	path: "/ws",
     cors : {
-        origin : "http://localhost:5173",
+        origin : ServerURL,
 		credentials: true,
+		methods: ["POST", "GET"],
     },
 	transports : ["websocket"],
 });

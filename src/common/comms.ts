@@ -25,4 +25,4 @@ export type UserData = {
 	name: string;
 }
 
-export const ServerURL = "http://localhost:6060";
+export const ServerURL = "https://mahjonh.frogrammer.pl";
