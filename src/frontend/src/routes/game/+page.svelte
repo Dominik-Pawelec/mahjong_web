@@ -83,7 +83,7 @@
 			{/each}
 		</div>
 	{:else}
-		<div class="error">Gra się rozjebawszy :c</div>
+		<div class="error">Something went wrong...</div>
 	{/if}
 </main>
 
